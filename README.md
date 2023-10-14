@@ -20,22 +20,22 @@
 - Delete Query: None. Only insert in database if not found
 - Schema:
 
-```
-- id: int
-- team_id: int
-- season_id: int
-- division_id: int
-- city: str
-- abbrev: str
-- ulti_analytics_ext_id: str
-- final_standing: str
-- team_name: str
-- ext_team_id: str
-- ls_team_id: str
-- active: bool
-- primary_hex: str
-- secondary_hex: str
-```
+    ```
+    - id: int
+    - team_id: int
+    - season_id: int
+    - division_id: int
+    - city: str
+    - abbrev: str
+    - ulti_analytics_ext_id: str
+    - final_standing: str
+    - team_name: str
+    - ext_team_id: str
+    - ls_team_id: str
+    - active: bool
+    - primary_hex: str
+    - secondary_hex: str
+    ```
 
 ![images/teams_seasons_infos.png]
 
@@ -46,18 +46,18 @@
 - Delete Query: None. Only insert in database if not found
 - Schema:
 
-```
-- id: int [key]
-- team_season_id: int
-- player_id: int
-- jersey_number: int
-- active: bool
-- player_id: int [key]
-- first_name: str
-- last_name: str
-- ext_player_id: str
-- ls_player_id: str
-```
+    ```
+    - id: int [key]
+    - team_season_id: int
+    - player_id: int
+    - jersey_number: int
+    - active: bool
+    - player_id: int [key]
+    - first_name: str
+    - last_name: str
+    - ext_player_id: str
+    - ls_player_id: str
+    ```
 
 ![images/player_infos_schema.png]
 
@@ -69,50 +69,50 @@
 - Delete Query: delete where game_id
 - Schema:
 
-```
-- player_id: int [key]
-- gameID: str [key]
-- isHome: bool
-- scoreHome: int
-- scoreAway: int
-- assists: int
-- goals: int
-- hockeyAssists: int
-- completions: int
-- throwaways: int
-- stalls: int
-- throwsAttempted: int
-- catches: int
-- drops: int
-- block: int
-- callahans: int
-- pulls: int
-- obPulls: int
-- recordedPulls: int
-- recordedPullsHangTime: float
-- oPointsPlayed: int
-- oPointsScored: int
-- dPointsPlayed: int
-- dPointsScored: int
-- secondsPlayed: int
-- yardsReceived: int
-- yardsThrown: int
-- hucksCompleted: int
-- hucksAttempted: int
+    ```
+    - player_id: int [key]
+    - gameID: str [key]
+    - reg_season: bool
+    - isHome: bool
+    - scoreHome: int
+    - scoreAway: int
+    - assists: int
+    - goals: int
+    - hockeyAssists: int
+    - completions: int
+    - throwaways: int
+    - stalls: int
+    - throwsAttempted: int
+    - catches: int
+    - drops: int
+    - block: int
+    - callahans: int
+    - pulls: int
+    - obPulls: int
+    - recordedPulls: int
+    - recordedPullsHangTime: float
+    - oPointsPlayed: int
+    - oPointsScored: int
+    - dPointsPlayed: int
+    - dPointsScored: int
+    - secondsPlayed: int
+    - yardsReceived: int
+    - yardsThrown: int
+    - hucksCompleted: int
+    - hucksAttempted: int
 
-To add? No because EXTRACTION
-- breaksAttempted: int
-- breaksCompleted: int
-- dumpsAttempted: int
-- dumpsCompleted: int
-- flicksAttempted: int
-- flicksCompleted: int
-- swingsAttempted: 
-- swingsCompleted:
-- dishesAttempted:
-- dishesCompleted:
-
-```
+    To add? No because EXTRACTION
+    - breaksAttempted: int
+    - breaksCompleted: int
+    - dumpsAttempted: int
+    - dumpsCompleted: int
+    - flicksAttempted: int
+    - flicksCompleted: int
+    - swingsAttempted: int
+    - swingsCompleted: int
+    - dishesAttempted: int
+    - dishesCompleted: int
+    ```
 
 ![images/player_game_stats_endpoint.png]
 
@@ -123,29 +123,29 @@ To add? No because EXTRACTION
 - Delete Query: delete where game_id
 - Schema:
 
-```
-- team_id: int [key]
-- gameID: str [key]
-- scoreTimeOurs: [int]
-- scoreTimeTheir: [int]
-- rosterIDs: [int]
-- completionsNumer: int
-- completionsDenom: int
-- hucksNumer: int
-- hucksDenom: int
-- blocks: int
-- turnovers: int
-- oLineScores: int
-- oLinePoints: int
-- oLinePossessions: int
-- dLineScores: int
-- dLinePoints: int
-- dLinePossessions: int
-- redZoneScores: int
-- redZonePossessions: int
-- isHome: bool
-
-```
+    ```
+    - team_id: int [key]
+    - gameID: str [key]
+    - reg_season: bool
+    - scoreTimeOurs: [int]
+    - scoreTimeTheir: [int]
+    - rosterIDs: [int]
+    - completionsNumer: int
+    - completionsDenom: int
+    - hucksNumer: int
+    - hucksDenom: int
+    - blocks: int
+    - turnovers: int
+    - oLineScores: int
+    - oLinePoints: int
+    - oLinePossessions: int
+    - dLineScores: int
+    - dLinePoints: int
+    - dLinePossessions: int
+    - redZoneScores: int
+    - redZonePossessions: int
+    - isHome: bool
+    ```
 
 ![images/teams_game_stats_infos.png]
 
@@ -157,38 +157,63 @@ To add? No because EXTRACTION
 - Delete Query: delete edge where game_id
 - Schema:
 
-```
-Node: Player
-- ext_player_id
-- last_name
+    ```
+    Node: Player
+    - ext_player_id
+    - last_name
 
-Edge: Throws Attempts
-- gameID: str [key]
-- point_number: int [key]
-- sequence: int [key] (?)
-- throw_type: str
-- x: float
-- y: float
-- is_success: bool
-```
+    Edge: Throws Attempts
+    - gameID: str [key]
+    - reg_season: bool
+    - point_number: int [key]
+    - sequence_number: int [key] (?)
+    - sequence_length: int
+    - throw_type: str
+    - x: float
+    - y: float
+    - is_success: bool
+    ```
+
+**Team Completion Rate Graph (GraphQL) [ TO REVIEW ]**
+
+- Table Name: `TeamsCompletionRateGraph`
+- Endpoints: Transform from `GameEvents` table
+- Delete Query: delete edge where game_id
+- Schema: Duplicate of `TeamGameStats`?
+
 
 ## Technologies used
 
 - [ ] Data Orchestration: `Dagster` and `Github Actions`
 - [ ] Database: 
-	* Document-Based for JSON file: `MongoDB`
-	* Graph Database: `GraphQL` or `Neo4j` or `graphene`
-	* `Databricks`
+	* Document-Based for JSON file: [ `MongoDB` ] or `Firebase`
+	* NoSQL Database: `Cassandra` with AstraDB
+	* SQL Database: `PostgreSQL` or [ `BigQuery` ]
+	* Graph Database: `GraphQL` or [ `Neo4j` ] or [ `graphene` ]
 - [ ] CI/CD: `Github Actions` or `Terraform`
 - [ ] Containerization: `Docker`
+- [ ] Distributed Computing: `pyspark`
+- [ ] Unit Testing: `pytest`
 
 **Optional**
 
 - [ ] Drift Detection: 
 - [ ] Hyperparameters Tuning:
-- [ ] Caching: `Redis` ; `SnowFlake`
-- [ ] Retraining ML Models: `SageMaker`
+- [ ] Caching: `Redis`
+- [ ] Retraining ML Models: `SageMaker` or `Apache Spark` or `Google AutoML`
 - [ ] MLOps: `MLFlow` or `Airflow`
+- [ ] Clusters: `Databricks` or `Snowflake`
+- [ ] Self-Hosted or Cloud
+
 
 ## Ressources
+
+**Dagster**
+
+- [Dagster - Schedules](https://docs.dagster.io/concepts/partitions-schedules-sensors/schedules)
+**Terraform**
+
+- [Terraform with Github Actions](https://developer.hashicorp.com/terraform/tutorials/automation/github-actions)
+- [Continuous INtegration for Terraform Modules with Github Actions](https://www.hashicorp.com/blog/continuous-integration-for-terraform-modules-with-github-actions)
+
 

@@ -3,4 +3,6 @@ numpy
 graphene
 neo4j
 dagster
+dagster-webserver
 pymongo
+audl
