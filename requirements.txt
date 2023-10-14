@@ -6,3 +6,4 @@ dagster
 dagster-webserver
 pymongo
 audl
+python-decouple
