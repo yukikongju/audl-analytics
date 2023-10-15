@@ -212,10 +212,15 @@
 
 - [Dagster - Schedules](https://docs.dagster.io/concepts/partitions-schedules-sensors/schedules)
 - [Dagster - Dynamic Outs](https://discuss.dagster.io/t/2644935/sounds-great-claire-i-think-you-gave-me-the-recipe-i-need-th)
+- [Dagster - Dynamic Graphs](https://docs.dagster.io/concepts/ops-jobs-graphs/dynamic-graphs#a-dynamic-job)
 
 **Terraform**
 
 - [Terraform with Github Actions](https://developer.hashicorp.com/terraform/tutorials/automation/github-actions)
 - [Continuous INtegration for Terraform Modules with Github Actions](https://www.hashicorp.com/blog/continuous-integration-for-terraform-modules-with-github-actions)
+
+**Neo4j**
+
+- [Neo4j Console](https://console.neo4j.io/?product=aura-db#databases)
 
 

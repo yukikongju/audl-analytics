@@ -1,3 +1,4 @@
 dagster:
-	dagster dev -f src/main.py
+	dagster dev -f src/assets/main.py
+	# dagster dev 
 

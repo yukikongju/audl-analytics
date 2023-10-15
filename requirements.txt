@@ -7,3 +7,5 @@ dagster-webserver
 pymongo
 audl
 python-decouple
+pytest
+dagit
