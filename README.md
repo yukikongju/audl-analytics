@@ -211,6 +211,8 @@
 **Dagster**
 
 - [Dagster - Schedules](https://docs.dagster.io/concepts/partitions-schedules-sensors/schedules)
+- [Dagster - Dynamic Outs](https://discuss.dagster.io/t/2644935/sounds-great-claire-i-think-you-gave-me-the-recipe-i-need-th)
+
 **Terraform**
 
 - [Terraform with Github Actions](https://developer.hashicorp.com/terraform/tutorials/automation/github-actions)
