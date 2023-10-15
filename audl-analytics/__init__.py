@@ -1,13 +1,12 @@
 from dagster import Definitions, ScheduleDefinition, define_asset_job, load_assets_from_package_module
 
 from . import assets
-#  from .assets import audl_stats
+#  from assets import etl
 
 
 # “At 18:00 on Monday.” 
-weekly_refresh_schedule = ScheduleDefinition(job=define_asset_job(name='all_assets_job'),
+etl_schedule = ScheduleDefinition(job=define_asset_job(name='etl_job'),
                                       cron_schedule='0 18 * * 1')
 
-
-defs = Definitions(assets=load_assets_from_package_module(assets), 
-                   schedules=[weekly_refresh_schedule])
+defs = Definitions(assets=load_assets_from_package_module(assets.etl), 
+                   schedules=[etl_schedule])
