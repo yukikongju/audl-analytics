@@ -12,7 +12,7 @@ using [drawio](https://www.drawio.com/)
 ## Technologies Used
 
 Databases:
-- Relational Database (PostgreSQL) => Player, Team and Game Stats
+- Relational Database (PostgreSQL, DuckDB) => Player, Team and Game Stats
 - Document-Oriented Database (MongoDB) => to store game events JSON
 - Graph Databases (Neo4j) => to keep track of player passes 
 
@@ -22,5 +22,8 @@ DevOps Tools:
 Data Orchestration:
 - Airflow
 
+DE Tools:
+- dbt
+- pyspark
 
 
