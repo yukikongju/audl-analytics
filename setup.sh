@@ -6,6 +6,8 @@ source venv/bin/activate
 # download python libraries
 pip3 install -r requirements.txt
 
-
 # create volumes
-mkdir postgres_data
+mkdir data/postgres
+
+# 
+docker-compose up
