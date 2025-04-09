@@ -1,6 +1,5 @@
 .neo4j.md
 .idea
-.env
 src/__pycache__/*
 __pycache__/*
 tmpkk5f5b7o
