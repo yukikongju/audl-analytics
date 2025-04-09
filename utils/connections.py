@@ -3,6 +3,7 @@ import logging
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
+from pymongo import MongoClient
 
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -25,4 +26,9 @@ def get_postgres_connection():
 
     return connection
 
+def get_mongo_db():
+    load_dotenv()
 
+    client = MongoClient(os.getenv("ME_CONFIG_MONGODB_URL"))
+    db = client[os.getenv("MONGO_DB_NAME", "audl")]
+    return db
