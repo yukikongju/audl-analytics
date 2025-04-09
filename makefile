@@ -1,4 +1,2 @@
-dagster:
-	dagster dev -f audl-analytics/assets/etl/main.py
-	# dagster dev 
-
+postgres:
+	pgcli -h localhost -p 5432 -u root -d audl
