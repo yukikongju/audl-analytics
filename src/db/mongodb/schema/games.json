@@ -1,0 +1,190 @@
+{
+  "bsonType": "object",
+  "required": ["game", "rostersHome", "rostersAway", "tsgHome", "tsgAway"],
+  "properties": {
+    "game": {
+      "bsonType": "object",
+      "required": [
+        "id",
+        "team_season_id_home",
+        "team_season_id_away",
+        "status_id",
+        "score_home",
+        "score_away",
+        "reg_season",
+        "ignore_game",
+        "lock",
+        "start_timestamp",
+        "start_timezone",
+        "aw_section",
+        "score_times_home",
+        "score_times_away",
+        "ext_game_id",
+        "update_timestamp",
+        "location_id",
+        "ls_game_id",
+        "ticket_url",
+        "streaming_url",
+        "roster_set",
+        "roster_set_1",
+        "type_id",
+        "team_season_home",
+        "team_season_away"
+      ],
+      "properties": {
+        "id": { "bsonType": "int" },
+        "team_season_id_home": { "bsonType": "int" },
+        "team_season_id_away": { "bsonType": "int" },
+        "status_id": { "bsonType": "int" },
+        "score_home": { "bsonType": "int" },
+        "score_away": { "bsonType": "int" },
+        "live": {},
+        "reg_season": { "bsonType": "bool" },
+        "ignore_game": { "bsonType": "bool" },
+        "lock": { "bsonType": "bool" },
+        "start_timestamp": { "bsonType": "string" },
+        "start_timezone": { "bsonType": "string" },
+        "start_time_tbd": {},
+        "aw_section": { "bsonType": "string" },
+        "score_times_home": {
+          "bsonType": "array",
+          "items": { "bsonType": "int" }
+        },
+        "score_times_away": {
+          "bsonType": "array",
+          "items": { "bsonType": "int" }
+        },
+        "ext_game_id": { "bsonType": "string" },
+        "update_timestamp": { "bsonType": "string" },
+        "location_id": { "bsonType": "int" },
+        "ls_game_id": { "bsonType": "string" },
+        "ticket_url": { "bsonType": "string" },
+        "streaming_url": { "bsonType": "string" },
+        "roster_set": { "bsonType": "bool" },
+        "roster_set_1": { "bsonType": "bool" },
+        "type_id": { "bsonType": "int" },
+        "team_season_home": {
+          "bsonType": "object",
+          "required": [
+            "id",
+            "team_id",
+            "season_id",
+            "division_id",
+            "city",
+            "abbrev",
+            "final_standing",
+            "team"
+          ],
+          "properties": {
+            "id": { "bsonType": "int" },
+            "team_id": { "bsonType": "int" },
+            "season_id": { "bsonType": "int" },
+            "division_id": { "bsonType": "int" },
+            "city": { "bsonType": "string" },
+            "abbrev": { "bsonType": "string" },
+            "ulti_analytics_ext_id": {},
+            "final_standing": { "bsonType": "int" },
+            "team": {
+              "bsonType": "object",
+              "required": ["id", "name", "ext_team_id", "ls_team_id", "active"],
+              "properties": {
+                "id": { "bsonType": "int" },
+                "name": { "bsonType": "string" },
+                "ext_team_id": { "bsonType": "string" },
+                "ls_team_id": { "bsonType": "string" },
+                "active": { "bsonType": "bool" },
+                "primary_hex": { "bsonType": "string" },
+                "secondary_hex": { "bsonType": "string" }
+              }
+            }
+          }
+        },
+        "team_season_away": {
+          "bsonType": "object"
+        }
+      }
+    },
+    "rostersHome": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "object",
+        "required": [
+          "id",
+          "team_season_id",
+          "player_id",
+          "jersey_number",
+          "active",
+          "player"
+        ],
+        "properties": {
+          "id": { "bsonType": "int" },
+          "team_season_id": { "bsonType": "int" },
+          "player_id": { "bsonType": "int" },
+          "jersey_number": { "bsonType": "string" },
+          "active": { "bsonType": "bool" },
+          "player": {
+            "bsonType": "object",
+            "required": [
+              "id",
+              "first_name",
+              "last_name",
+              "ext_player_id",
+              "ls_player_id"
+            ],
+            "properties": {
+              "id": { "bsonType": "int" },
+              "first_name": { "bsonType": "string" },
+              "last_name": { "bsonType": "string" },
+              "ext_player_id": { "bsonType": "string" },
+              "ls_player_id": { "bsonType": "string" }
+            }
+          }
+        }
+      }
+    },
+    "rostersAway": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "object",
+        "required": [
+          "id",
+          "team_season_id",
+          "player_id",
+          "jersey_number",
+          "active",
+          "player"
+        ],
+        "properties": {
+          "id": { "bsonType": "int" },
+          "team_season_id": { "bsonType": "int" },
+          "player_id": { "bsonType": "int" },
+          "jersey_number": { "bsonType": "string" },
+          "active": { "bsonType": "bool" },
+          "player": {
+            "bsonType": "object",
+            "required": [
+              "id",
+              "first_name",
+              "last_name",
+              "ext_player_id",
+              "ls_player_id"
+            ],
+            "properties": {
+              "id": { "bsonType": "int" },
+              "first_name": { "bsonType": "string" },
+              "last_name": { "bsonType": "string" },
+              "ext_player_id": { "bsonType": "string" },
+              "ls_player_id": { "bsonType": "string" }
+            }
+          }
+        }
+      }
+    },
+    "tsgHome": {
+      "bsonType": "object"
+    },
+    "tsgAway": {
+      "bsonType": "object"
+    }
+  }
+}
