@@ -3,7 +3,7 @@ import os
 
 from pymongo.database import Database
 from pymongo.errors import CollectionInvalid
-from src.utils.connections import get_mongo_db
+from src.utils.mongodb.connections import get_mongo_db
 
 
 def create_collection(db: Database, collection_name: str, schema_json_path: str | None = None) -> None:
