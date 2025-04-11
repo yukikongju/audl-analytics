@@ -1,9 +1,11 @@
 import argparse
 import logging
 
+from argparse import ArgumentParser
+
 from audl.stats.endpoints.seasonschedule import SeasonSchedule
 
-def main(args) -> None:
+def main(args: ArgumentParser) -> None:
     # --- parse arguments
     season = args.season
     user = args.user

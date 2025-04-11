@@ -28,7 +28,8 @@ def create_collection(db: Database, collection_name: str, schema_json_path: str 
         If the schema file content is invalid.
     """
     if collection_name in db.list_collection_names():
-        print(f"Collection '{collection_name}' already exists.")
+        print(f"Collection '{collection_name}' already exists. Deleting it...")
+        db[collection_name].drop()
         return
 
     schema = {}
@@ -55,7 +56,12 @@ def main():
     ROOT_DIR = os.path.abspath(os.curdir)
 
     GAME_SCHEMA_JSON_PATH = os.path.join(ROOT_DIR, "src/db/mongodb/schema/games1.json")
-    create_collection(db, "games", GAME_SCHEMA_JSON_PATH)
+    GAME_COLLECTION_NAME = "games"
+    create_collection(db, GAME_COLLECTION_NAME, GAME_SCHEMA_JSON_PATH)
+
+    # --- create indexes
+    game_collection = db[GAME_COLLECTION_NAME]
+    game_collection.create_index("game.ext_game_id", unique=True)
 
 if __name__ == "__main__":
     main()

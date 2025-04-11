@@ -6,6 +6,8 @@ mongo:
 	mongosh "mongodb://root:example@localhost:27017/"
 	# use audl
 	# show collections
+	# db.games.find({ "game.ext_game_id": "2022-07-31-DET-MIN" }).pretty()
+	# db.games.countDocuments()
 
 	# mongosh "mongodb://<username>:<password>@localhost:27017/<your_db>?authSource=admin"
 

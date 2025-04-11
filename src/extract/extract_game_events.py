@@ -21,7 +21,9 @@ def main(args: ArgumentParser):
 
     # --- push into database
     db = get_mongo_db()
-    upsert_document(db, TABLE_NAME, {"ext_game_id": ext_game_id}, game_json)
+
+    upsert_id = upsert_document(db, TABLE_NAME, {"game.ext_game_id": ext_game_id}, game_json)
+    print(upsert_id)
 
     logging.log(0, f"Successfully upsert game {ext_game_id} into table {TABLE_NAME}")
 
