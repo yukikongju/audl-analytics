@@ -1,0 +1,21 @@
+{
+  "bsonType": "object",
+  "required": ["game", "rostersHome", "rostersAway", "tsgHome", "tsgAway"],
+  "properties": {
+    "game": {
+      "bsonType": "object"
+    },
+    "rostersHome": {
+      "bsonType": "array"
+    },
+    "rostersAway": {
+      "bsonType": "array"
+    },
+    "tsgHome": {
+      "bsonType": "object"
+    },
+    "tsgAway": {
+      "bsonType": "object"
+    }
+  }
+}
