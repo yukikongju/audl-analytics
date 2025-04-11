@@ -9,5 +9,8 @@ pip3 install -r requirements.txt
 # create volumes
 mkdir data/postgres
 
+# install
+brew install mongosh
+
 # 
 docker-compose up
