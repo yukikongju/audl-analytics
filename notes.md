@@ -11,10 +11,12 @@
     - [X] Database connection
     - [X] Create collection
     - [X] insert document
-3. [o] Create postgres Utils
+3. [O] Create postgres Utils
     - [X] connection
     - [X] Create Table
-    - [ ] insert
+    - [X] insert/upsert
+    - [X] get table indexes
+    - [ ] convert dataframe type to table schema
 
 **ELT**
 

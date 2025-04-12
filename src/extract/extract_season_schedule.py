@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 
 from audl.stats.endpoints.seasonschedule import SeasonSchedule
 from src.utils.postgres.connections import get_postgres_connection
-from src.utils.postgres.operations import upsert_dataframe
+from src.utils.postgres.operations import upsert_dataframe, convert_df_types_to_table_schema
 
 
 def main(args: ArgumentParser) -> None:
@@ -23,11 +23,15 @@ def main(args: ArgumentParser) -> None:
     except Exception as e:
         raise ConnectionError(f"The following error occured when fetching the season schedule: {e}")
 
-    # --- TODO: verify types
+    # --- convert column names into lower case to match postgres table - FIXME: refactor into upsert_dataframe?
+    df_schedule.columns = [col.lower() for col in df_schedule.columns]
+
+    # --- verify types
+    conn = get_postgres_connection()
+    df_clean = convert_df_types_to_table_schema(conn, df_schedule, SCHEDULE_TABLE_NAME)
 
     # --- push to postgres
-    conn = get_postgres_connection()
-    upsert_dataframe(conn, SCHEDULE_TABLE_NAME, df_schedule)
+    upsert_dataframe(conn, SCHEDULE_TABLE_NAME, df_clean)
     print(f"Successfully upserted dataframe into table {SCHEDULE_TABLE_NAME}")
 
 
