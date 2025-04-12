@@ -1,5 +1,5 @@
-CREATE TABLE IF NOT EXISTS games (
-    gameID TEXT NOT NULL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS schedule (
+    gameID TEXT PRIMARY KEY,
     awayTeamID TEXT NOT NULL,
     awayTeamCity TEXT NOT NULL,
     awayTeamName TEXT NOT NULL,
@@ -16,5 +16,10 @@ CREATE TABLE IF NOT EXISTS games (
     locationURL TEXT,
     startTimestamp TIMESTAMP,
     startTimezone TEXT,
-    startTimeTBD BOOLEAN NOT NULL
+    startTimeTBD BOOLEAN NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+-- Create an index on startTimestamp and gameID
+CREATE INDEX IF NOT EXISTS idx
+    ON schedule (startTimestamp, gameID);
