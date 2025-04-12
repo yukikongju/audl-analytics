@@ -1,8 +1,5 @@
-import json
 import os
 
-from pymongo.database import Database
-from pymongo.errors import CollectionInvalid
 from src.utils.mongodb.connections import get_mongo_db
 from src.utils.mongodb.operations import create_collection
 

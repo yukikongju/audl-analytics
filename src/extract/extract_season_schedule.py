@@ -1,33 +1,37 @@
 import argparse
 import logging
+import pandas as pd
 
 from argparse import ArgumentParser
 
 from audl.stats.endpoints.seasonschedule import SeasonSchedule
+from src.utils.postgres.connections import get_postgres_connection
+from src.utils.postgres.operations import upsert_dataframe
+
 
 def main(args: ArgumentParser) -> None:
     # --- parse arguments
     season = args.season
-    user = args.user
-    password = args.password
-    host = args.host
-    port = args.port
-    db = args.db
-    table_name = args.table_name
+    SCHEDULE_TABLE_NAME = "schedule"
 
     # --- verify arguments
     if not (2020 <= season <= 2025):
         raise ValueError("Season needs to be an integer between 2020 and 2025")
 
-    df_schedule = get_season_schedule(season)
+    try:
+        df_schedule = get_season_schedule(season)
+    except Exception as e:
+        raise ConnectionError(f"The following error occured when fetching the season schedule: {e}")
 
-    # --- TODO: create db connection
+    # --- TODO: verify types
+
+    # --- push to postgres
+    conn = get_postgres_connection()
+    upsert_dataframe(conn, SCHEDULE_TABLE_NAME, df_schedule)
+    print(f"Successfully upserted dataframe into table {SCHEDULE_TABLE_NAME}")
 
 
-    # --- TODO: push to postgres
-
-
-def get_season_schedule(season: int):
+def get_season_schedule(season: int) -> pd.DataFrame:
     schedule = SeasonSchedule(season).get_schedule()
     return schedule
 
@@ -36,12 +40,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Ingest Season Games to Postgres")
 
     parser.add_argument("--season", required=True, type=int, help="Season to extract game from")
-    parser.add_argument("--user", required=True, help="username for postgres")
-    parser.add_argument("--password", required=True, help="password for postgres")
-    parser.add_argument("--host", required=True, help="host for postgres")
-    parser.add_argument("--port", required=True, help="port for postgres")
-    parser.add_argument("--db", required=True, help="database for postgres")
-    parser.add_argument("--table_name", required=True, help="table name for postgres")
 
     args = parser.parse_args()
     main(args)
