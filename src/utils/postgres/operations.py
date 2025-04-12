@@ -2,9 +2,7 @@ import logging
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Connection
 
-
-class TableAlreadyExistError(Exception):
-    pass
+from src.utils.errors import TableAlreadyExistError
 
 
 def create_table_from_sql(conn: Connection, table_name: str, create_sql: str, drop_if_exist: bool = False) -> None:
