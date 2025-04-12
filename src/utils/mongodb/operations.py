@@ -1,6 +1,9 @@
+import json
+import os
+
 from pymongo.database import Database
 from pymongo.collection import Collection
-from pymongo.errors import PyMongoError
+from pymongo.errors import PyMongoError, CollectionInvalid
 
 
 def create_collection(db: Database, collection_name: str, schema_json_path: str | None = None) -> None:
