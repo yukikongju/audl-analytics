@@ -11,18 +11,20 @@
     - [X] Database connection
     - [X] Create collection
     - [X] insert document
-3. [O] Create postgres Utils
+3. [X] Create postgres Utils
     - [X] connection
     - [X] Create Table
     - [X] insert/upsert
-    - [X] get table indexes
-    - [ ] convert dataframe type to table schema
+    - [X] get table indexes + primary key
+    - [X] convert dataframe type to table schema
 
 **ELT**
 
-- [.] Extraction Jobs
-    - [o] Extract season schedule from season
+- [o] Extraction Jobs
+    - [X] Extract season schedule from season
     - [X] Extract Game events from game external id "2024-08-24-CAR-MIN"
+    - [ ] Extract Player Metadata => `https://www.watchufa.com/league/players`
+    - [ ] Extract Team Metadata ??
 - [ ] Transformations
     - [ ] From Game Events, get team metadata => `game.get_teams_metadata()`
     - [ ] From Game Events, get player metadata => `game.get_players_metadata()`
@@ -44,6 +46,8 @@
 
 **Visualization**
 
+- [X] Streamlit POC
+- [ ] 
 
 **ML**
 

@@ -14,3 +14,7 @@ brew install mongosh
 
 # 
 docker-compose up
+
+# initialize tables
+python3 -m src.db.init.mongodb.init_collections
+python3 -m src.db.init.postgres.init_tables
