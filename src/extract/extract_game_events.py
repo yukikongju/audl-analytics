@@ -9,7 +9,7 @@ from src.utils.mongodb.operations import upsert_document
 
 def main(args: ArgumentParser):
     ext_game_id = args.ext_game_id 
-    TABLE_NAME = "games_events"
+    COLLECTION_NAME = "game-events"
 
     # TODO: "Game id is invalid. Please check!"
 
@@ -21,11 +21,19 @@ def main(args: ArgumentParser):
 
     # --- push into database
     db = get_mongo_db()
+    #  collection = db[COLLECTION_NAME]
+    #  result = collection.insert_one(game_json)
+    #  print(result.inserted_id)
+    #  #  print(game_json)
+    #  print(db.name)
+    #  print(collection.full_name)
+    #  print(type(game_json))
 
-    upsert_id = upsert_document(db, TABLE_NAME, {"game.ext_game_id": ext_game_id}, game_json)
+    upsert_id = upsert_document(db, COLLECTION_NAME, {"game.ext_game_id": ext_game_id}, game_json)
     print(upsert_id)
 
-    logging.log(0, f"Successfully upsert game {ext_game_id} into table {TABLE_NAME}")
+
+    logging.log(0, f"Successfully upsert game {ext_game_id} into table {COLLECTION_NAME}")
 
 
 
