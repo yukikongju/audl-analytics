@@ -1,3 +1,4 @@
+import certifi
 import os
 
 from dotenv import load_dotenv
@@ -43,7 +44,7 @@ def get_mongo_db() -> Database:
 
     # --- connect to database
     try: 
-        client = MongoClient(mongo_url, serverSelectionTimeoutMS=5000)
+        client = MongoClient(mongo_url, serverSelectionTimeoutMS=5000, tlsCAFile=certifi.where())
         client.admin.command("ping")
     except Exception as e:
         raise ConnectionError(f"failed to connect to MongoDB: {e}")

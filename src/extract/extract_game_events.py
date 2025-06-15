@@ -9,7 +9,7 @@ from src.utils.mongodb.operations import upsert_document
 
 def main(args: ArgumentParser):
     ext_game_id = args.ext_game_id 
-    TABLE_NAME = "games"
+    TABLE_NAME = "games_events"
 
     # TODO: "Game id is invalid. Please check!"
 

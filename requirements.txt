@@ -1,5 +1,6 @@
 audl==0.0.16
 beautifulsoup4==4.13.3
+certifi==2025.6.15
 graphene==3.4.3
 neo4j==5.28.1
 numpy==2.2.4

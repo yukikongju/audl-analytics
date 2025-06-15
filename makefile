@@ -14,3 +14,7 @@ mongo:
 
 # python3 -m src.db.mongodb.create_games
 
+tests:
+	python3 -m pytest --print tests/
+
+
