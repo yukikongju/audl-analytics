@@ -4,6 +4,7 @@ import pandas as pd
 from sqlalchemy import inspect, text, Table, MetaData
 from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import insert
+from typing import List
 
 from src.utils.errors import TableAlreadyExistError, TableNotFoundError
 
@@ -67,8 +68,13 @@ def get_table_indexes(conn: Connection, table_name: str):
 
     return inspector.get_indexes(table_name)
 
-def get_table_primary_key(conn: Connection, table_name: str) -> str:
+def get_table_primary_key(conn: Connection, table_name: str) -> List[str]:
     inspector = inspect(conn)
+
+    table_exists = inspector.has_table(table_name)
+    if not table_exists:
+        raise TableNotFoundError(f"Could not get the indexes of the table {table_name} because the table doesn't exist. Please check!")
+
     pk = inspector.get_pk_constraint(table_name)
     return pk['constrained_columns']
 

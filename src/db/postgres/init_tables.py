@@ -18,9 +18,15 @@ def main():
 
     # --- run create table queries
     conn = get_postgres_connection()
-    create_table_from_sql(conn, SCHEDULE_TABLE_NAME, create_sql=create_schedule_sql, 
-                          drop_if_exist=True)
-    print(f"Successfully created table {SCHEDULE_TABLE_NAME}")
+
+    # - creating schedule table
+    #  create_table_from_sql(conn, SCHEDULE_TABLE_NAME, 
+    #                        create_sql=create_schedule_sql, 
+    #                        drop_if_exist=False)
+    #  print(f"Successfully created table {SCHEDULE_TABLE_NAME}")
+
+    # - TODO: creating players table
+
 
 
 if __name__ == "__main__":

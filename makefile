@@ -13,8 +13,9 @@ mongo:
 
 
 # python3 -m src.db.mongodb.create_games
+# python3 -m src.extract.extract_game_events --ext_game_id "2024-08-24-CAR-MIN"
+
 
 tests:
 	python3 -m pytest --print tests/
-
 
