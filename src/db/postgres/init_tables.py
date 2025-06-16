@@ -26,8 +26,6 @@ def main(args: Namespace):
     print(f"Successfully created table {table_name}")
 
 
-
-
 if __name__ == "__main__":
     parser = ArgumentParser(description="Creating Table from sql file")
     parser.add_argument("--sql_path", required=True, type=str, help="Path to sql file")
