@@ -55,3 +55,30 @@ def get_mongo_db() -> Database:
 
     return client[mongo_db]
 
+def get_mongo_collection(collection_name: str):
+    """
+    Returns MongoDB collection
+
+    Params
+    ------
+    collection_name: str
+        name of the collection
+
+    Raises
+    ------
+    ValueError
+        if collection doesn't exist in database name
+    ConnectionError
+    """
+    db = get_mongo_db()
+
+    if collection_name not in db.list_collection_names():
+        raise ValueError(f"The collection {collection_name} doesn't exist in the database. Please check!")
+
+    try:
+        collection = db[collection_name]
+    except:
+        raise ConnectionError(f"An error has occured when connecting to the collection {collection_name}.")
+
+    return collection
+
