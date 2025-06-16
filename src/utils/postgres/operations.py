@@ -22,7 +22,11 @@ def create_table_from_sql(conn: Connection, table_name: str, create_sql: str, dr
     if table_exists:
         raise TableAlreadyExistError(f"Table '{table_name}' already exists. Please change the flag 'drop_if_exist' or delete the table and retry.")
 
-    conn.execute(text(create_sql))
+    try:
+        conn.execute(text(create_sql))
+    except Exception as e:
+        raise Exception(f"The following error has occured when creating table {table_name}: {e}")
+
     logging.log(0, f"Succesfully created table {table_name}")
 
 
