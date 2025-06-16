@@ -101,7 +101,8 @@ def get_mongo_document(collection_name: str, query: dict):
     """
     collection = get_mongo_collection(collection_name)
     result = collection.find_one(query)
-    print(result)
+    if result is None:
+        raise ValueError(f"The document with query {query} couldn't be found in {collection_name}. Please check!")
     return result
 
 
