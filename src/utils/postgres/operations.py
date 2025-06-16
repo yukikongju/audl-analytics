@@ -59,7 +59,7 @@ def upsert_dataframe(conn: Connection, table_name: str, df: pd.DataFrame) -> Non
         raise ValueError("The dataframe columns doesn't match the defined DDL. Please check!")
 
     # --- TODO: convert dataframe column into matching data type
-    #  dff = convert_df_types_to_table_schema(conn=conn, df=dff, table_name=table_name)
+    dff = convert_df_types_to_table_schema(conn=conn, df=dff, table_name=table_name)
 
     # --- build upsert query
     records = dff.to_dict(orient='records')
