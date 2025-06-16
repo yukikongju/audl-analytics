@@ -40,10 +40,29 @@ def upsert_dataframe(conn: Connection, table_name: str, df: pd.DataFrame) -> Non
         raise ValueError(f"No indexes found for table {table_name}. Cannot upsert")
     print(conflict_keys)
 
-    # --- build upsert query
     metadata = MetaData()
     table = Table(table_name, metadata, autoload_with=conn)
-    records = df.to_dict(orient='records')
+    table_cols = [col.name for col in table.columns]
+
+    # --- drop columns not in schema
+    try:
+        dff = df[table_cols]
+    except:
+        raise ValueError("Column not in schema")
+
+    # --- check if dataframe width is the same as DDL
+    if len(dff.columns) != len(table_cols):
+        raise ValueError(f"The number of column in dataframe doesn't match table schema. Dataframe has {len(dff.columns)} whilst DDL has {len(table_cols)}. Please check!")
+
+    # --- check if df matches DDL
+    if set(dff.columns) != set(table_cols):
+        raise ValueError("The dataframe columns doesn't match the defined DDL. Please check!")
+
+    # --- TODO: convert dataframe column into matching data type
+    #  dff = convert_df_types_to_table_schema(conn=conn, df=dff, table_name=table_name)
+
+    # --- build upsert query
+    records = dff.to_dict(orient='records')
 
     # FIXME: add case when table has index + pk
     stmt = insert(table).values(records)
@@ -120,6 +139,7 @@ def convert_df_types_to_table_schema(conn: Connection, df: pd.DataFrame, table_n
             else:
                 logging.warning(f"Unmapped SQL type '{col_type}' for column '{col_name}', leaving as-is.")
         except Exception as e:
-            logging.warning(f"Could not convert column '{col_name}' to type '{col_type}': {e}")
+            #  logging.warning(f"Could not convert column '{col_name}' to type '{col_type}': {e}")
+            raise Exception(f"Could not convert column '{col_name}' to type '{col_type}': {e}")
 
     return df_aligned
