@@ -82,3 +82,26 @@ def get_mongo_collection(collection_name: str):
 
     return collection
 
+def get_mongo_document(collection_name: str, query: dict):
+    """
+    Retrieving document from MongoDB collection using specified query 
+    if it exists
+
+    Params
+    ------
+    collection_name: str
+        name of the MongoDB collection
+    query: dict
+        "where" clause used to find the document. Ex: {"game.ext_game_id": "2024-08-24-CAR-MIN"}
+
+    Raises
+    ------
+    ValueError
+        if document doesn't exists
+    """
+    collection = get_mongo_collection(collection_name)
+    result = collection.find_one(query)
+    print(result)
+    return result
+
+
