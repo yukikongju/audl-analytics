@@ -1,0 +1,9 @@
+sources:
+  - name: src_postgres
+    database: audl
+    schema: public
+
+    tables:
+      - name: load_game_metadata
+      - name: load_game_rosters
+      - name: load_game_tsg
