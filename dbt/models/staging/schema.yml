@@ -1,0 +1,17 @@
+models:
+  - name: stg_game_metadata
+    description: "Staging Table for Game Metadata"
+    columns:
+      - name: id
+        description: ""
+  - name: stg_game_rosters
+    description: "Staging Table for Game Rosters"
+    columns:
+      - name: id
+        description: ""
+  - name: stg_game_tsg
+    description: "Staging Table for Game TSG"
+    columns:
+      - name: id
+        description: ""
+
