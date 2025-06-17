@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS load_schedule (
+CREATE TABLE IF NOT EXISTS schedule (
     gameID TEXT PRIMARY KEY,
     awayTeamID TEXT NOT NULL,
     awayTeamCity TEXT NOT NULL,
