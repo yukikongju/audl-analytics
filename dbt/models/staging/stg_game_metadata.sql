@@ -4,6 +4,7 @@ with source as (
     select 
 	id,
 	team_season_id_home,
+	team_season_id_away,
 	score_home,
 	score_away,
 	reg_season,
@@ -13,9 +14,11 @@ with source as (
 	score_times_home,
 	score_times_away,
 	location_id,
+	ext_game_id,
 	ls_game_id,
 	ticket_url,
 	streaming_url,
+	type_id,
 
 	-- Home
 	team_season_home_id as home_id,
