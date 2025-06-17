@@ -1,0 +1,13 @@
+audl-postgres:
+  target: dev
+  outputs:
+    dev:
+      dbname: audl
+      host: localhost
+      password: root
+      port: 5432
+      schema: public
+      threads: 1
+      type: postgres
+      user: root
+
