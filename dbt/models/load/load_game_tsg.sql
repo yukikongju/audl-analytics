@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS game_tsg (
+CREATE TABLE IF NOT EXISTS load_game_tsg (
     id INT PRIMARY KEY,
     teamSeasonId INT,
     gameId INT,

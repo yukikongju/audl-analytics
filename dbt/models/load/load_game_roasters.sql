@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS game_rosters (
+CREATE TABLE IF NOT EXISTS load_game_rosters (
     id INT PRIMARY KEY,
     team_season_id INT,
     player_id INT,

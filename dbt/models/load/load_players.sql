@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS players (
+CREATE TABLE IF NOT EXISTS load_players (
     ext_player_id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     team TEXT NOT NULL,
