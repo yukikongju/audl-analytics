@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS game_metadata (
     team_season_home_abbrev TEXT,
     team_season_home_ulti_analytics_ext_id TEXT,
     team_season_home_final_standing INT,
-    --  team_season_home_team_id INT,
     team_season_home_team_name TEXT,
     team_season_home_team_ext_team_id TEXT,
     team_season_home_team_ls_team_id TEXT,
@@ -51,7 +50,6 @@ CREATE TABLE IF NOT EXISTS game_metadata (
     team_season_away_abbrev TEXT,
     team_season_away_ulti_analytics_ext_id TEXT,
     team_season_away_final_standing INT,
-    --  team_season_away_team_id INT, -- team_season_away.team.id
     team_season_away_team_name TEXT,
     team_season_away_team_ext_team_id TEXT,
     team_season_away_team_ls_team_id TEXT,

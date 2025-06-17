@@ -19,6 +19,13 @@ dbt_docs:
 	dbt docs generate
 	dbt docs serve --port 9000
 
+dbt_run_single_file:
+	dbt run --select stg_game_rosters
+
+dbt_install_packages:
+	dbt deps
+
+
 tests:
 	python3 -m pytest --print tests/
 

@@ -10,9 +10,6 @@ snapshot-paths: ["snapshots"]
 
 models:
   audl:
-    load:
-      +schema: load
-      +materialized: table
     staging: 
       +schema: staging
       +materialized: view
