@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS game_metadata (
+CREATE TABLE IF NOT EXISTS load_game_metadata (
     id INT PRIMARY KEY,
     team_season_id_home INT NOT NULL,
     team_season_id_away INT NOT NULL,
