@@ -20,25 +20,25 @@ def main(args: Namespace):
     # get game metadata
     df_games = pd.json_normalize(document['game'])
     df_games = standardize_dataframe(df=df_games, case="snake")
-    upsert_dataframe(conn=conn, table_name='game_metadata', df=df_games)
+    upsert_dataframe(conn=conn, table_name='load_game_metadata', df=df_games)
 
     # get game tsg
     df_tsgHome = pd.json_normalize(document['tsgHome'])
     df_tsgHome = standardize_dataframe(df=df_tsgHome, case="snake")
-    upsert_dataframe(conn=conn, table_name='game_tsg', df=df_tsgHome)
+    upsert_dataframe(conn=conn, table_name='load_game_tsg', df=df_tsgHome)
 
     df_tsgAway = pd.json_normalize(document['tsgAway'])
     df_tsgAway = standardize_dataframe(df=df_tsgAway, case="snake")
-    upsert_dataframe(conn=conn, table_name='game_tsg', df=df_tsgAway)
+    upsert_dataframe(conn=conn, table_name='load_game_tsg', df=df_tsgAway)
 
     # get game rosters
     df_rostersHome = pd.json_normalize(document['rostersHome'])
     df_rostersHome = standardize_dataframe(df=df_rostersHome, case="snake")
-    upsert_dataframe(conn=conn, table_name='game_rosters', df=df_rostersHome)
+    upsert_dataframe(conn=conn, table_name='load_game_rosters', df=df_rostersHome)
 
     df_rostersAway = pd.json_normalize(document['rostersAway'])
     df_rostersAway = standardize_dataframe(df=df_rostersAway, case="snake")
-    upsert_dataframe(conn=conn, table_name='game_rosters', df=df_rostersAway)
+    upsert_dataframe(conn=conn, table_name='load_game_rosters', df=df_rostersAway)
 
 
 if __name__ == "__main__":

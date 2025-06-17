@@ -1,5 +1,9 @@
 # TODOs
 
+**Priorities**
+- [ ] Add `vw_` prefix to tables load tables
+
+
 **CI/CD**
 
 - [ ] Precommit Hook
@@ -28,7 +32,6 @@
 - [ ] Transformations
     - [ ] From Game Events, get team metadata => `game.get_teams_metadata()`
     - [ ] From Game Events, get player metadata => `game.get_players_metadata()`
-    - [ ] 
     - [ ] From [Game Events??], get throw selection
     - [ ] From Game Events, get roster stats => `game.get_roster_stats()`
     - [ ] From Roster Stats, get boxscores => `game.get_team_stats()`
