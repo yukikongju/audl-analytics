@@ -10,6 +10,8 @@ with source as (
 	start_timestamp,
 	start_timezone,
 	aw_section as division_str,
+	score_times_home,
+	score_times_away,
 	location_id,
 	ls_game_id,
 	ticket_url,
