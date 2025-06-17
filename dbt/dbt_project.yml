@@ -1,0 +1,21 @@
+name: audl
+version: 1.0
+
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+models:
+  audl:
+    load:
+      +schema: load
+      +materialized: table
+    staging: 
+      +schema: staging
+      +materialized: view
+    marts:
+      +schema: marts
+      +materialized: table
+
