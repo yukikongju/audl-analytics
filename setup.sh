@@ -10,7 +10,9 @@ pip3 install -r requirements.txt
 mkdir data/postgres
 
 # install
-brew install mongosh
+brew install mongosh 
+
+# note: very important to NOT install dbt as it is deprecated
 
 # 
 docker-compose up

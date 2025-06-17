@@ -1,5 +1,6 @@
 name: audl
 version: 1.0
+profile: audl-postgres
 
 
 model-paths: ["models"]
