@@ -22,6 +22,7 @@ docker-compose up
 # python3 -m src.db.postgres.init_tables --sql_path=dbt/models/load/load_game_metadata.sql --table_name=load_game_metadata
 # python3 -m src.db.postgres.init_tables --sql_path=dbt/models/load/load_game_rosters.sql --table_name=load_game_rosters
 # python3 -m src.db.postgres.init_tables --sql_path=dbt/models/load/load_game_tsg.sql --table_name=load_game_tsg
+# python3 -m src.db.postgres.init_tables --sql_path=src/db/postgres/schema/player_game_stats.sql --table_name=player_game_stats
 
 # --- backfill
 # python3 -m src.load.load_game_events_table --ext_game_id "2024-08-24-CAR-MIN"
