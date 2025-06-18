@@ -6,9 +6,13 @@
 - [X] Postgres Document for Game Player Stats
     - [X] Create table
     - [X] Player Stats Extraction from Player Profile
-- [ ] Extraction: Player Personal Information
-    - [ ] Create Postgres Table
-    - [ ] Extract Job
+- [X] Extraction: Player Personal Information
+    - [X] Create Postgres Table
+    - [X] Extract Job
+- [ ] Backfill
+    - [ ] Player Profile
+    - [ ] Schedule
+    - [ ] MongoDB Game Events 
 
 
 **CI/CD**
