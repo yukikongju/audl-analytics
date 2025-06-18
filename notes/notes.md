@@ -1,7 +1,11 @@
 # TODOs
 
 **Priorities**
-- [ ] Add `vw_` prefix to tables load tables
+- [ ] ER Modeling for Events + Create tables
+- [ ] Transformation for Events
+- [ ] MongoDB Document for player profile stats
+    - [ ] Create Document
+    - [ ] Player Profile
 
 
 **CI/CD**

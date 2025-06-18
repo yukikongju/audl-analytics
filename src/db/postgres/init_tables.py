@@ -22,7 +22,7 @@ def main(args: Namespace):
 
     # - creating schedule table
     create_table_from_sql(conn, table_name=table_name, create_sql=ddl, 
-                          drop_if_exist=True)
+                          drop_if_exist=False)
     print(f"Successfully created table {table_name}")
 
 

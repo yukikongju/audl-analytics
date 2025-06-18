@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS player_game_stats (
-    player_ext_id TEXT PRIMARY KEY,
+    PRIMARY KEY (ext_player_id, gameID),
+    ext_player_id TEXT,
     gameID TEXT,
+    isHome BOOLEAN,
     scoreHome INT,
     scoreAway INT,
     assists INT,
@@ -26,8 +28,8 @@ CREATE TABLE IF NOT EXISTS player_game_stats (
     yardsReceived INT,
     yardsThrown INT,
     hucksCompleted INT,
-    hucksAttempted INT,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    hucksAttempted INT
+    --  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 -- Create an index on startTimestamp and gameID
