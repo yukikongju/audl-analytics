@@ -10,9 +10,15 @@ def main():
 
     ext_player_ids = list(df['ext_player_id'])
     for ext_player_id in ext_player_ids:
+        # TODO: check if user is already in table
+
         print(f"Extracting profile for {ext_player_id}")
-        extract_player_profile(ext_player_id)
-        print(f"Successfully extracted player profile {ext_player_id}")
+        try:
+            extract_player_profile(ext_player_id)
+            print(f"Successfully extracted player profile {ext_player_id}")
+        except:
+            print(f"An error occured when extracting the profile for {ext_player_id}. Skipping...")
+            
 
 if __name__ == "__main__":
     main()
