@@ -1,11 +1,14 @@
 # TODOs
 
 **Priorities**
-- [ ] ER Modeling for Events + Create tables
-- [ ] Transformation for Events
-- [ ] MongoDB Document for player profile stats
-    - [ ] Create Document
-    - [ ] Player Profile
+- [X] ER Modeling for Events + Create tables
+- [X] Load for Events
+- [X] Postgres Document for Game Player Stats
+    - [X] Create table
+    - [X] Player Stats Extraction from Player Profile
+- [ ] Extraction: Player Personal Information
+    - [ ] Create Postgres Table
+    - [ ] Extract Job
 
 
 **CI/CD**
