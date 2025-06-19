@@ -7,3 +7,4 @@ sources:
       - name: game_metadata
       - name: game_rosters
       - name: game_tsg
+      - name: player_game_stats
