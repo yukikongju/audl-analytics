@@ -14,4 +14,66 @@ models:
     columns:
       - name: id
         description: ""
+  - name: fct_team_game_stats
+    description: "Fact Table for Team Game Stats built on game advanced stats (game_tsg), not player individual stats"
+    columns:
+      - name: id
+        description: ""
+        tests:
+          - unique
+          - not_null
+      - name: team_season_id
+        description: ""
+      - name: source
+        description: ""
+      - name: start_on_offense
+        description: ""
+      - name: score_times_our
+        description: ""
+      - name: is_home
+        description: ""
+      - name: rosters_ids
+        description: ""
+      - name: completions_numer
+        description: ""
+      - name: completions_denom
+        description: ""
+      - name: hucks_numer
+        description: ""
+      - name: hucks_denom
+        description: ""
+      - name: blocks
+        description: ""
+      - name: turnovers
+        description: ""
+      - name: offensive_line_scores
+        description: ""
+      - name: offensive_line_points
+        description: ""
+      - name: offensive_line_possessions
+        description: ""
+      - name: defensive_line_scores
+        description: ""
+      - name: defensive_line_points
+        description: ""
+      - name: defensive_line_possessions
+        description: ""
+      - name: red_zone_scores
+        description: ""
+      - name: red_zone_possessions
+        description: ""
+      - name: completion_perc
+        description: "Throwing Completion Percentage. Defined as completions_numer / completions_denom"
+      - name: hucks_perc
+        description: "Hucks Completion Percentage"
+      - name: hold_perc
+        description: "Offensive Hold Pecentage. Defined as offensive_line_scores / offensive_line_points"
+      - name: break_perc
+        description: "Break Percentage. Defined as defensive_line_scores / defensive_line_points"
+      - name: offensive_line_conversion_perc
+        description: "Offensive Line Conversion Percentage. Defined as offensive_line_scores / offensive_line_possessions"
+      - name: defensive_line_conversion_perc
+        description: "Defensive Line Conversion Percentage. Defined as defensive_line_scores / defensive_line_possessions"
+      - name: red_zone_conversion_perc
+        description: "Red Zone Conversion Percentage."
 
