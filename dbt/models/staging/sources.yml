@@ -1,6 +1,6 @@
 sources:
   - name: audl
-    # database: audl
+    database: audl
     schema: public
 
     tables:

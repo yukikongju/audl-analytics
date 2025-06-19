@@ -8,7 +8,7 @@ with source as (
 	source,
 	startOnOffense as start_on_offense,
 	events,
-	updateMoment,
+	updateMoment as update_moment,
 	statusId as status_id,
 	scoreTimesOur as score_times_our,
 	scoreTimesTheir as score_times_their,
@@ -18,16 +18,16 @@ with source as (
 	hucksDenom as hucks_denom,
 	blocks,
 	turnovers,
-	oLineScores,
-	oLinePoints,
-	oLinePossessions,
-	dLineScores,
-	dLinePoints,
-	dLinePossessions,
-	redZoneScores,
-	redZonePossessions,
-	isHome,
-	rosterIds
+	oLineScores as offensive_line_scores,
+	oLinePoints as offensive_line_points,
+	oLinePossessions as offensive_line_possessions,
+	dLineScores as defensive_line_scores,
+	dLinePoints as defensive_line_points,
+	dLinePossessions as defensive_line_possessions,
+	redZoneScores as red_zone_scores,
+	redZonePossessions as red_zone_possessions,
+	isHome as is_home,
+	rosterIds as roster_ids
     from source
 )
 
