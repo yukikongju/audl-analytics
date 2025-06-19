@@ -1,0 +1,17 @@
+models:
+  - name: dim_season_players
+    description: "Dimension Table for Season Player"
+    columns:
+      - name: id
+        description: ""
+  - name: dim_season_teams
+    description: "Dimension Table for Season Teams"
+    columns:
+      - name: id
+        description: ""
+  - name: dim_games
+    description: "Dimension Table for Games"
+    columns:
+      - name: id
+        description: ""
+
