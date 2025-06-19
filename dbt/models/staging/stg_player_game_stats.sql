@@ -3,7 +3,7 @@ with source as (
 ), renamed as (
     select
 	ext_player_id,
-	gameid as game_id,
+	gameid as ext_game_id,
 	ishome as is_home,
 	scorehome as score_home,
 	scoreaway as score_away,
@@ -28,6 +28,7 @@ with source as (
 	dpointsscored as defensive_points_scored,
 	secondsplayed as seconds_played,
 	yardsreceived as yards_received,
+	yardsThrown as yards_thrown,
 	huckscompleted as hucks_completed,
 	hucksattempted as hucks_attempted
     from source

@@ -1,5 +1,8 @@
 postgres:
 	pgcli -h localhost -p 5432 -u root -d audl
+	# \dt // list tables
+	# \dn // list schemas
+	# SET search_path TO public;
 
 mongo:
 	docker exec -it mongodb mongosh -u root -p example
