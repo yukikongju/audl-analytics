@@ -9,10 +9,12 @@
 - [X] Extraction: Player Personal Information
     - [X] Create Postgres Table
     - [X] Extract Job
-- [ ] Backfill
-    - [ ] Player Profile
-    - [ ] Schedule
-    - [ ] MongoDB Game Events 
+- [o] Backfill
+    - [X] Schedule from 2021 to 2025
+    - [X] Player ext ids list
+    - [o] Player Game Stats => `extract_all_player_game_stats.py` => check if exists in DB before fetching
+    - [ ] MongoDB Game Events => `extract_all_game_events.py`
+    - [o] Player Profile => `extract_all_player_profiles.py` => need to handle errors
 
 
 **CI/CD**

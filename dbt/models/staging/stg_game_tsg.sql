@@ -14,7 +14,7 @@ with source as (
 	scoreTimesTheir as score_times_their,
 	completionsNumer as completions_numer,
 	completionsDenom as completions_denom,
-	hucksNumer as huckes_numer,
+	hucksNumer as hucks_numer,
 	hucksDenom as hucks_denom,
 	blocks,
 	turnovers,
