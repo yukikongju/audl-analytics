@@ -1,7 +1,7 @@
 import logging
 import pandas as pd
 
-from sqlalchemy import inspect, text, Table, MetaData
+from sqlalchemy import column, inspect, text, Table, MetaData
 from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import insert
 from typing import List
@@ -143,3 +143,24 @@ def convert_df_types_to_table_schema(conn: Connection, df: pd.DataFrame, table_n
             raise Exception(f"Could not convert column '{col_name}' to type '{col_type}': {e}")
 
     return df_aligned
+
+def run_select_query(conn: Connection, query: str) -> pd.DataFrame:
+    """
+    Execute a SELECT statement from the provided query and returns the result 
+    as a pandas dataframe.
+
+    """
+    try:
+        stmt = text(query)
+        result = conn.execute(stmt)
+    except Exception as e:
+        raise ValueError(f"Error when executing query {query}. Exited with the following error: {e}")
+
+    rows = result.fetchall()
+    columns = result.keys()
+    df = pd.DataFrame(rows, columns=columns)
+    return df
+    
+    
+
+
