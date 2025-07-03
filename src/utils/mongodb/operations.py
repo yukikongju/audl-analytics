@@ -51,6 +51,19 @@ def create_collection(db: Database, collection_name: str, schema_json_path: str 
     except CollectionInvalid as e:
         raise RuntimeError(f"Failed to create collection: {e}")
 
+def insert_many_documents_in_collection(db: Database, collection_name: str, documents: List[dict]):
+    try: 
+        collection: Collection = db[collection_name]
+    except Exception as e:
+        raise ValueError(f"Couldn't find {collection_name} in database {db}. Please check! Exited with error: {e}")
+
+    try:
+        result = collection.insert_many(documents)
+    except Exception as e:
+        raise ValueError(f"An error occured when inserting into {collection_name}")
+
+    return result
+
 def upsert_document(db: Database, collection_name: str, query: dict, new_values: dict) -> str:
     """
     Updates a document matching the query or inserts it if it doesn't exist.
