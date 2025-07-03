@@ -10,8 +10,9 @@ def main(args: Namespace):
     ext_game_id = args.ext_game_id 
     COLLECTION_NAME = "game-events"
 
-    # TODO: "Game id is invalid. Please check!"
+    # TODO: get all ext_game_id withing datarange
 
+    # "Game id is invalid. Please check!"
     try: 
         game = GameStats(ext_game_id)
         game_json = game.json
