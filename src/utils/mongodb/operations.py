@@ -4,6 +4,7 @@ import os
 from pymongo.database import Database
 from pymongo.collection import Collection
 from pymongo.errors import PyMongoError, CollectionInvalid
+from typing import List
 
 
 def create_collection(db: Database, collection_name: str, schema_json_path: str | None = None) -> None:
@@ -88,4 +89,21 @@ def upsert_document(db: Database, collection_name: str, query: dict, new_values:
         return str(result.upserted_id) if result.upserted_id else ""
     except PyMongoError as e:
         raise RuntimeError(f"Failed to upsert document in '{collection_name}': {e}")
+
+def find_all_documents_in_collection(db: Database, collection_name: str, predicate: dict, included_fields: dict | None = None) -> List[dict]:
+    """
+
+    """
+    try: 
+        collection: Collection = db[collection_name]
+        if included_fields:
+            matching_documents = collection.find(predicate, included_fields)
+        else:
+            matching_documents = collection.find(predicate)
+    except Exception as e:
+        raise ValueError(f"An error occured when finding documents in collection {collection_name} with predicate {predicate}. Exiting with error: {e}")
+
+    docs = [doc for doc in matching_documents]
+
+    return docs
 
