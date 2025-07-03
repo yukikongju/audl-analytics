@@ -10,8 +10,6 @@ def main(args: Namespace):
     ext_game_id = args.ext_game_id 
     COLLECTION_NAME = "game-events"
 
-    # TODO: get all ext_game_id withing datarange
-
     # "Game id is invalid. Please check!"
     try: 
         game = GameStats(ext_game_id)
@@ -22,7 +20,6 @@ def main(args: Namespace):
     # --- push into database
     db = get_mongo_db()
     upsert_id = upsert_document(db, COLLECTION_NAME, {"game.ext_game_id": ext_game_id}, game_json)
-    print(upsert_id)
     logging.log(0, f"Successfully upsert game {ext_game_id} into table {COLLECTION_NAME}")
 
 
