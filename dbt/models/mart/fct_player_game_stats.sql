@@ -1,5 +1,5 @@
 select
-    ext_player_id,
+    ext_player_id, -- FIXME: use game_id and player_id instead
     ext_game_id,
 
     -- atomic metrics
