@@ -6,3 +6,4 @@ tmpkk5f5b7o
 postgres_data/*
 .env
 .config
+outputs/*
