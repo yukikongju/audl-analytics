@@ -95,6 +95,7 @@ KNOWN_EVENT_CODES = (
 
 # --- Field / classification constants ----------------------------------------------------
 HUCK_YARDS = 40          # downfield throw distance for a huck (matches tsg reconstruction)
+REDZONE_Y = 80           # y >= 80 is the attacking red zone (scoring-opportunity range)
 ENDZONE_Y = 100          # goal line; yards are capped here
 
 _WARNED_EVENT_CODES = set()

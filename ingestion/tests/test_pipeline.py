@@ -28,7 +28,7 @@ def test_run_produces_four_tables(tmp_path, game_id):
     assert len(tables["stg_games"]) == 2  # one row per team
     assert tables["stg_throws"], "expected at least one throw"
     for name in tables:
-        assert (tmp_path / game_id / f"{name}.json").exists()
+        assert (tmp_path / game_id / "staging" / f"{name}.json").exists()
 
 
 @needs_local
