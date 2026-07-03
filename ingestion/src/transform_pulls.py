@@ -1,11 +1,15 @@
 """stg_pulls transform (from the gameEvents API).
 
-One row per pull (``PULL_INBOUNDS``/``PULL_OB``). The pulling team is the team on defense to
-start the point (the team whose stream logged the pull). ``pull_sequence`` starts at 1 and
-increments when a point has more than one pull (an offsides penalty forcing a re-pull).
+One row per pull (``PULL_INBOUNDS``/``PULL_OB``/``OFFSIDES_OURS`` re-pull). The pulling team is
+the team on defense to start the point (the team whose stream logged the pull).
+``pull_sequence`` starts at 1 and increments when a point has more than one pull (an offsides
+penalty forcing a re-pull -- the API counts both the nullified and the re-pull).
 """
 
-from constants import PULL_EVENTS, PULL_OB
+from constants import OFFSIDES_OURS, PULL_EVENTS, PULL_OB
+
+# An offsides re-pull (9) is a pull the API counts; it carries no coords/hangtime.
+_PULL_ROW_TYPES = PULL_EVENTS | {OFFSIDES_OURS}
 
 
 def extract_pulls_events(timeline, ctx):
@@ -14,7 +18,7 @@ def extract_pulls_events(timeline, ctx):
     seq_by_point = {}
     for it in timeline:
         e = it["event"]
-        if e.get("type") not in PULL_EVENTS:
+        if e.get("type") not in _PULL_ROW_TYPES:
             continue
         pid = it["point_id"]
         seq_by_point[pid] = seq_by_point.get(pid, 0) + 1

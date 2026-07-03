@@ -22,6 +22,7 @@ from constants import (
     CALLAHAN_THEIRS,
     DROP,
     GOAL,
+    OFFSIDES_OURS,
     POINT_START,
     PULL_EVENTS,
     QUARTER_END,
@@ -55,7 +56,8 @@ def _split_points(events, where=""):
     def new_point():
         return {
             "received": None, "line_events": [], "pull_events": [],
-            "blocks": [], "possessions": [], "scored": None, "active": False,
+            "blocks": [], "callahan_defender": None, "possessions": [],
+            "scored": None, "active": False,
         }
 
     def finalize(scored):
@@ -92,7 +94,9 @@ def _split_points(events, where=""):
             cur["line_events"].append(e)
         elif t in SUB_EVENTS:
             cur["line_events"].append(e)
-        elif t in PULL_EVENTS:
+        elif t in PULL_EVENTS or t == OFFSIDES_OURS:
+            # OFFSIDES_OURS (9) is a re-pull forced on the recording team -- a real pull the
+            # API counts. (OFFSIDES_THEIRS is the opponent's, logged in their stream.)
             cur["pull_events"].append(e)
             cur["active"] = True
             end_poss("pull")
@@ -100,7 +104,10 @@ def _split_points(events, where=""):
             cur["blocks"].append(e.get("defender"))
             cur["active"] = True
         elif t == CALLAHAN_OURS:
-            cur["blocks"].append(e.get("defender"))
+            # the callahan scorer -- kept separate from regular (type-11) blocks so it is
+            # attached to the opponent stream's CALLAHAN_THEIRS throw, not consumed onto a
+            # throwaway. (The type-23 event itself carries no defender.)
+            cur["callahan_defender"] = e.get("defender")
             cur["active"] = True
             finalize("us")               # this team's defender scored a callahan
         elif t in THROW_EVENTS:
@@ -251,6 +258,10 @@ def build_timeline(home_events, away_events, home_team, away_team, where=""):
             "H": list(hp["blocks"]) if hp else [],
             "A": list(ap["blocks"]) if ap else [],
         }
+        callahan_by = {
+            "H": hp["callahan_defender"] if hp else None,
+            "A": ap["callahan_defender"] if ap else None,
+        }
 
         for is_recv, p in _weave(recv_list, pull_list):
             poss_counter += 1
@@ -259,9 +270,17 @@ def build_timeline(home_events, away_events, home_team, away_team, where=""):
             throws = p["throws"]
             for j, e in enumerate(throws):
                 defender = None
-                if (j == len(throws) - 1 and p["end"] == "turnover"
-                        and e.get("type") == THROWAWAY_OURS and blocks[def_side]):
-                    defender = blocks[def_side].pop(0)
+                if j == len(throws) - 1:
+                    # a defensive block (type-11) shows up in the OTHER stream as the turnover
+                    # it forced -- usually a throwaway, but sometimes a drop (that stream's
+                    # receiver failed to hold a contested disc). Consume an available block onto
+                    # either; genuine drops with no recorded block leave the list empty.
+                    if (p["end"] == "turnover" and e.get("type") in (THROWAWAY_OURS, DROP)
+                            and blocks[def_side]):
+                        defender = blocks[def_side].pop(0)
+                    elif e.get("type") == CALLAHAN_THEIRS:
+                        # the scorer, from the defending stream's CALLAHAN_OURS event
+                        defender = callahan_by[def_side]
                 ann.append(_annotated(
                     off_side, side_team[off_side], side_team[def_side], e,
                     possession_id=poss_counter, sequence_id=j + 1,

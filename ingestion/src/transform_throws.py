@@ -101,6 +101,7 @@ def extract_throws_events(timeline, ctx):
             row["receiver_id"] = e.get("receiver")  # the dropper
             ex, ey = e.get("receiverX"), e.get("receiverY")
             row["is_drop"] = True
+            row["is_huck"] = _is_huck(sy, ey)  # a dropped huck still counts as an attempt
         elif t == THROWAWAY_OURS:
             ex, ey = e.get("turnoverX"), e.get("turnoverY")
             row["is_throwaway"] = True
@@ -125,13 +126,17 @@ def extract_throws_events(timeline, ctx):
 
 
 def _mark_hockey_assists(rows):
-    """Flag the completion immediately preceding each assist in the same possession."""
+    """Flag the pass that fed the assister: the completion immediately preceding the assist in
+    the same possession whose receiver IS the assister (the assist's thrower). Requiring the
+    chain to connect (hockey-assister -> assister -> scorer) avoids crediting a broken chain
+    where the prior pass went to someone other than the assister."""
     by_poss = {}
     for i, r in enumerate(rows):
         by_poss.setdefault(r["possession_id"], []).append(i)
     for idxs in by_poss.values():
         assist_pos = next((k for k, i in enumerate(idxs) if rows[i]["is_assist"]), None)
         if assist_pos and assist_pos >= 1:
+            assist = rows[idxs[assist_pos]]
             prev = rows[idxs[assist_pos - 1]]
-            if prev["is_completion"]:
+            if prev["is_completion"] and prev["receiver_id"] == assist["thrower_id"]:
                 prev["is_hockey_assist"] = True

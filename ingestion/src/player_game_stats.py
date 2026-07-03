@@ -40,24 +40,28 @@ CORE_FIELDS = [
 ]
 
 # Verified 41/41 vs the live API (MTL-PIT): pure event-derived stats. Asserted exact.
+# Notes on ones that took a fix:
+#   goals/callahans -- attach the callahan scorer to the CALLAHAN_THEIRS throw (the type-23
+#     event carries no defender; the scorer is on the type-12 CALLAHAN_OURS in the other stream).
+#   hucksAttempted -- a dropped huck (type-20) still counts as an attempt (is_huck set on drops).
+#   pulls -- an offsides re-pull (type-9 OFFSIDES_OURS) counts as a pull.
+#   blocks -- a block (type-11) shows up in the other stream as the turnover it forced, a
+#     throwaway OR a drop; attaching to both (see timeline) makes blocks exact.
 EXACT_FIELDS = [
-    "assists", "hockeyAssists", "completions", "throwAttempts", "throwaways", "stalls",
-    "callahansThrown", "yardsReceived", "yardsThrown", "hucksCompleted", "catches", "drops",
-    "obPulls", "recordedPulls", "recordedPullsHangtime",
+    "assists", "goals", "hockeyAssists", "completions", "throwAttempts", "throwaways",
+    "stalls", "callahansThrown", "callahans", "blocks", "yardsReceived", "yardsThrown",
+    "hucksCompleted", "hucksAttempted", "catches", "drops", "pulls", "obPulls",
+    "recordedPulls", "recordedPullsHangtime",
 ]
 # ±1 tolerated (float staging yards summed then rounded vs the API's integers).
 YARD_FIELDS = {"yardsReceived", "yardsThrown"}
 
 # Correct in aggregate but inherit a known staging limitation at the per-player level, so
 # reported (not asserted exact):
-#   goals/callahans/blocks -- the timeline block->throwaway attachment can credit a callahan
-#     block to the wrong defender (team total is preserved); see the MTL callahan misalignment.
-#   hucksAttempted -- one off-by-1 throw at the 40y huck threshold.
-#   pulls -- a buzzer-point pull can be missing.
-#   o/dPointsPlayed/Scored -- mid-point-timeout sub stints in stg_point_lineups can attach to
-#     the adjacent point, flipping a few players' O/D split (each player's O+D total is exact).
+#   o/dPointsPlayed/Scored -- mid-point-timeout sub stints + point-boundary segmentation in
+#     stg_point_lineups don't match the API's point model (each player's O+D total is exact,
+#     but the O/D split is off for players on the affected points).
 STAGING_LIMITED_FIELDS = [
-    "goals", "callahans", "blocks", "hucksAttempted", "pulls",
     "oPointsPlayed", "oPointsScored", "dPointsPlayed", "dPointsScored",
 ]
 # Best-effort clock / heuristic opportunity model. Reported, never asserted.

@@ -45,19 +45,15 @@ def test_team_totals_reconcile_with_stg_games(game_id):
     for g in tables["stg_games"]:
         s = slug[g["teamSeasonId"]]
         assert _sum(rows, s, "completions") == g["completionsNumer"], f"{game_id} {s} completions"
-        # blocks can only be under-attached by the timeline (never invented); MTL-away is a
-        # documented undercount from the callahan stream-misalignment.
-        assert _sum(rows, s, "blocks") <= g["blocks"], f"{game_id} {s} blocks over-counted"
+        assert _sum(rows, s, "blocks") == g["blocks"], f"{game_id} {s} blocks"
         turnovers = sum(
             _sum(rows, s, f) for f in ("throwaways", "stalls", "drops")
         )
         assert turnovers == g["turnovers"], f"{game_id} {s} turnovers"
-        # goals credited once each (incl. callahan catches); like blocks, a misaligned stream
-        # can drop a score but never invent one, so goals <= final score.
-        assert _sum(rows, s, "goals") <= g["score"], f"{game_id} {s} goals over-counted"
+        # goals credited once each (incl. callahan catches) == final score
+        assert _sum(rows, s, "goals") == g["score"], f"{game_id} {s} goals"
         assert _sum(rows, s, "hucksCompleted") == g["hucksNumer"], f"{game_id} {s} hucksNumer"
-        # hucksDenom has a known ±1 staging edge at the 40y threshold
-        assert abs(_sum(rows, s, "hucksAttempted") - g["hucksDenom"]) <= 1, f"{game_id} {s} hucksDenom"
+        assert _sum(rows, s, "hucksAttempted") == g["hucksDenom"], f"{game_id} {s} hucksDenom"
 
 
 # Unrecorded-player sentinels the API doesn't emit; they carry stray touches but no lineup.
