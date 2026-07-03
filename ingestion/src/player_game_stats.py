@@ -6,10 +6,12 @@ Because the staging tables are already keyed by external ``playerID`` with clean
 flags and exact coordinates, this is a group-by aggregation -- not the possession state
 machine the tsg reconstruction in ``playground/player_game_stats.py`` needed.
 
-Field scope (see the plan): the ~24 count/yardage/point fields are computed to match the API
-exactly; ``secondsPlayed`` is best-effort (inherits stg_point_lineups' partial clock); the
-four ``*Opportunit*`` fields use a heuristic red-zone-possession model. Rows are keyed by
-``playerID`` + team slug -- names/jersey (the API's nested ``player`` object) are out of scope.
+Field scope (see the plan): the ~24 count/yardage fields AND the four O/D-point fields are
+computed to match the API exactly; ``secondsPlayed`` is best-effort (inherits
+stg_point_lineups' game-clock estimate); the four ``*Opportunit*`` fields count offensive
+possessions (close to the API but with small residuals on non-scoring possessions). Rows are
+keyed by ``playerID`` + team slug -- names/jersey (the API's nested ``player`` object) are out
+of scope.
 
 Run ``uv run python -m player_game_stats <game_id> [--local]`` to print a per-field accuracy
 table against the live API.
@@ -17,7 +19,6 @@ table against the live API.
 
 from collections import defaultdict
 
-from constants import REDZONE_Y
 from pipeline_utils import BASE_URL, http_get_json
 
 # Output field order (flat), matching the user's sample API row.
@@ -47,24 +48,24 @@ CORE_FIELDS = [
 #   pulls -- an offsides re-pull (type-9 OFFSIDES_OURS) counts as a pull.
 #   blocks -- a block (type-11) shows up in the other stream as the turnover it forced, a
 #     throwaway OR a drop; attaching to both (see timeline) makes blocks exact.
+#   o/dPointsPlayed/Scored -- a player's O/D for a point is the possession phase they entered
+#     on (stg_point_lineups' per-stint line_type), so mid-point-timeout subs are attributed to
+#     the correct side. Verified 41/41 vs the live API (MTL-PIT).
 EXACT_FIELDS = [
     "assists", "goals", "hockeyAssists", "completions", "throwAttempts", "throwaways",
     "stalls", "callahansThrown", "callahans", "blocks", "yardsReceived", "yardsThrown",
     "hucksCompleted", "hucksAttempted", "catches", "drops", "pulls", "obPulls",
     "recordedPulls", "recordedPullsHangtime",
+    "oPointsPlayed", "oPointsScored", "dPointsPlayed", "dPointsScored",
 ]
 # ±1 tolerated (float staging yards summed then rounded vs the API's integers).
 YARD_FIELDS = {"yardsReceived", "yardsThrown"}
 
-# Correct in aggregate but inherit a known staging limitation at the per-player level, so
-# reported (not asserted exact):
-#   o/dPointsPlayed/Scored -- mid-point-timeout sub stints + point-boundary segmentation in
-#     stg_point_lineups don't match the API's point model (each player's O+D total is exact,
-#     but the O/D split is off for players on the affected points).
-STAGING_LIMITED_FIELDS = [
-    "oPointsPlayed", "oPointsScored", "dPointsPlayed", "dPointsScored",
-]
-# Best-effort clock / heuristic opportunity model. Reported, never asserted.
+# Best-effort, reported (never asserted exact):
+#   secondsPlayed -- game-clock point durations; the clock stops on turnovers/timeouts so this
+#     slightly undercounts real on-field time.
+#   *Opportunit* -- one per offensive possession; small residuals vs the API come from
+#     possession-segmentation differences on non-scoring possessions.
 INFORMATIONAL_FIELDS = [
     "secondsPlayed", "oOpportunities", "oOpportunityScores", "dOpportunities",
     "dOpportunityStops",
@@ -79,9 +80,12 @@ def _blank():
     return d
 
 
-def build_player_game_stats(throws, pulls, lineups, team_slug_by_id=None, game_id=None):
-    """Aggregate the three staging tables into one row per player.
+def build_player_game_stats(throws, pulls, lineups, blocks=None, team_slug_by_id=None,
+                            game_id=None):
+    """Aggregate the staging tables into one row per player.
 
+    ``blocks`` is stg_blocks (one row per type-11/type-12 defensive block); blocks/callahans
+    and the callahan goal are counted from it directly (exact), not inferred from throws.
     ``team_slug_by_id`` maps numeric team_season_id -> slug (built from stg_games); when
     omitted ``teamID`` falls back to the numeric id. ``game_id`` is unused in the row (the
     API entry carries none) but accepted for symmetry with the other transforms.
@@ -95,7 +99,7 @@ def build_player_game_stats(throws, pulls, lineups, team_slug_by_id=None, game_i
 
     # --- throws --------------------------------------------------------------------------
     for r in throws:
-        thr, rec, dfn = r["thrower_id"], r["receiver_id"], r["defender_id"]
+        thr, rec = r["thrower_id"], r["receiver_id"]
         if r["is_completion"]:
             bump(thr, "completions")
             bump(rec, "catches")
@@ -115,11 +119,7 @@ def build_player_game_stats(throws, pulls, lineups, team_slug_by_id=None, game_i
         if r["is_drop"]:
             bump(rec, "drops")
         if r["is_callahan"]:
-            bump(thr, "callahansThrown")
-            bump(dfn, "callahans")
-            bump(dfn, "goals")            # a callahan is a defensive goal for the catcher
-        if r["is_block"]:
-            bump(dfn, "blocks")
+            bump(thr, "callahansThrown")   # callahans/blocks/goals for the scorer: see stg_blocks
         if r["is_huck"]:
             bump(thr, "hucksAttempted")
         # throwAttempts = real throws (completions, throwaways, dropped throws, callahans);
@@ -137,27 +137,42 @@ def build_player_game_stats(throws, pulls, lineups, team_slug_by_id=None, game_i
             bump(p, "recordedPulls")
             stats[p]["_hangtime_ms"] += r["hangtime_seconds"] * 1000.0
 
+    # --- blocks (counted directly from stg_blocks -- exact) ------------------------------
+    for b in blocks or []:
+        d = b["defender_id"]
+        if d is None:
+            continue
+        team_of.setdefault(d, b["defense_team_id"])
+        bump(d, "blocks")
+        if b["is_callahan"]:            # a callahan is a block that is also a defensive goal
+            bump(d, "callahans")
+            bump(d, "goals")
+
     # --- points (O/D played & scored, secondsPlayed) -------------------------------------
-    # Group lineup stints by (point_id, team_id); union players across stints of a point.
+    # Group lineup stints by (point_id, team_id). A player's O/D for the point is the phase of
+    # the FIRST stint they appear in (matching the API: a mid-point sub entering on offense
+    # during a pulled point gets an O-point). secondsPlayed sums every stint they were on.
     by_point_team = defaultdict(list)
     for r in lineups:
         by_point_team[(r["point_id"], r["team_id"])].append(r)
     for (pid_pt, team_id), stint_rows in by_point_team.items():
-        is_o = any(s["line_type"] == "O-Line" for s in stint_rows)
+        stint_rows = sorted(stint_rows, key=lambda s: s["stint_id"])
         won = any(s["is_stint_scoring"] for s in stint_rows)
-        players = set()
+        seen = set()
         for s in stint_rows:
+            entry_is_o = s["line_type"] == "O-Line"
             for p in s["lineup"]:
-                players.add(p)
                 team_of.setdefault(p, team_id)
                 stats[p]["secondsPlayed"] += s["seconds_played"] or 0
-        for p in players:
-            if is_o:
-                stats[p]["oPointsPlayed"] += 1
-                stats[p]["oPointsScored"] += 1 if won else 0
-            else:
-                stats[p]["dPointsPlayed"] += 1
-                stats[p]["dPointsScored"] += 1 if won else 0
+                if p in seen:
+                    continue
+                seen.add(p)               # first entry wins -> credit one point per player
+                if entry_is_o:
+                    stats[p]["oPointsPlayed"] += 1
+                    stats[p]["oPointsScored"] += 1 if won else 0
+                else:
+                    stats[p]["dPointsPlayed"] += 1
+                    stats[p]["dPointsScored"] += 1 if won else 0
 
     # --- opportunities (heuristic red-zone possession model) -----------------------------
     _accumulate_opportunities(throws, lineups, stats)
@@ -181,9 +196,10 @@ def build_player_game_stats(throws, pulls, lineups, team_slug_by_id=None, game_i
 
 
 def _accumulate_opportunities(throws, lineups, stats):
-    """Per red-zone possession, credit oOpportunity to the offense's on-field players and
-    dOpportunity to the defense's; a scored possession is an oOpportunityScore, an unscored
-    one a dOpportunityStop. Field presence comes from the point's lineups (union of stints).
+    """Per possession, credit oOpportunity to the offense's on-field players and dOpportunity
+    to the defense's; a scored possession is an oOpportunityScore, an unscored one a
+    dOpportunityStop. An "opportunity" is any offensive possession (matches the API -- not
+    red-zone-limited). Field presence comes from the point's lineups (union of stints).
     """
     players_by_point_team = defaultdict(set)
     for r in lineups:
@@ -195,13 +211,6 @@ def _accumulate_opportunities(throws, lineups, stats):
 
     for rows in poss.values():
         first = rows[0]
-        reached_rz = any(
-            (r["end_y"] is not None and r["end_y"] >= REDZONE_Y)
-            or (r["start_y"] is not None and r["start_y"] >= REDZONE_Y)
-            for r in rows
-        )
-        if not reached_rz:
-            continue
         scored = any(r["is_assist"] for r in rows)
         pt = first["point_id"]
         off_players = players_by_point_team.get((pt, first["offense_team_id"]), set())
@@ -269,12 +278,7 @@ def _print_report(report, game_id):
         if r["total"] == 0:
             continue
         mark = "OK " if r["match"] == r["total"] else "XX "
-        if f in INFORMATIONAL_FIELDS:
-            tag = " (info)"
-        elif f in STAGING_LIMITED_FIELDS:
-            tag = " (staging)"
-        else:
-            tag = ""
+        tag = " (info)" if f in INFORMATIONAL_FIELDS else ""
         worst = ""
         if r["worst"]:
             pid, got, exp = r["worst"]
@@ -299,7 +303,7 @@ def main():
     slug = _slug_map(tables["stg_games"])
     built = build_player_game_stats(
         tables["stg_throws"], tables["stg_pulls"], tables["stg_point_lineups"],
-        team_slug_by_id=slug, game_id=args.game_id,
+        blocks=tables["stg_blocks"], team_slug_by_id=slug, game_id=args.game_id,
     )
     api_rows = fetch_player_game_stats(args.game_id)
     _print_report(_compare(built, api_rows), args.game_id)

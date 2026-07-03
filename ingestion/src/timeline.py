@@ -28,10 +28,12 @@ from constants import (
     QUARTER_END,
     SCORE_THEIRS,
     STALL_OURS,
+    STALL_THEIRS,
     START_O_POINT,
     SUB_EVENTS,
     THROW_EVENTS,
     THROWAWAY_OURS,
+    THROWAWAY_THEIRS,
     warn_unknown_event,
 )
 
@@ -43,26 +45,42 @@ def _other(side):
 def _split_points(events, where=""):
     """Split one stream into points. Each point:
 
-        {received, line_events, pull_events, blocks, possessions, scored}
+        {received, line_events, pull_events, blocks, possessions, scored, quarter}
 
     ``received`` is True if this stream's team received (its start was START_O_POINT).
     ``possessions`` is a list of ``{throws, end}`` for this team's offensive runs. ``scored``
-    is 'us' / 'them' / None (buzzer) -- who ended the point.
+    is 'us' / 'them' / None (buzzer) -- who ended the point. ``quarter`` is the 0-based period
+    the point started in (the game clock ``time`` resets each period).
+
+    ``line_events`` is a list of ``(event, phase)`` pairs, where ``phase`` is the recording
+    team's possession phase ('O'/'D') at the moment of the line change: a point start sets it
+    from START_O/START_D; it flips to 'O' whenever the team gains the disc (block / opponent
+    turnover) and to 'D' whenever it loses the disc (own turnover). A mid-point timeout/injury
+    sub therefore carries the phase the subbed-on players entered with -- an O-line subbed on
+    while the team is on offense during a point it pulled still gets 'O'.
     """
     points = []
     cur = None
     poss = None
+    phase = None
+    quarter = 0
 
     def new_point():
         return {
             "received": None, "line_events": [], "pull_events": [],
             "blocks": [], "callahan_defender": None, "possessions": [],
-            "scored": None, "active": False,
+            "scored": None, "active": False, "quarter": quarter,
         }
 
     def finalize(scored):
+        # Keep any point that scored, saw play, OR had a line set (line_events). A point cut
+        # off by the quarter buzzer before this team threw (e.g. it received and the buzzer hit
+        # first) has no play but its players were on the field, so the other stream would keep
+        # it (it pulled = active) while this one dropped it -- losing this team's O-point. A
+        # point always opens on a POINT_START, so line_events is the "a line took the field"
+        # signal; pairing treats an unscored kept point as a buzzer fragment.
         nonlocal cur, poss
-        if cur is not None and (scored is not None or cur["active"]):
+        if cur is not None and (scored is not None or cur["active"] or cur["line_events"]):
             cur["scored"] = scored
             points.append(cur)
         cur, poss = None, None
@@ -86,14 +104,17 @@ def _split_points(events, where=""):
             if t in POINT_START:
                 cur = new_point()
             else:
+                if t in QUARTER_END:
+                    quarter += 1
                 continue  # stray event before the first point start
 
         if t in POINT_START:
             if cur["received"] is None:
                 cur["received"] = t == START_O_POINT
-            cur["line_events"].append(e)
+            phase = "O" if t == START_O_POINT else "D"
+            cur["line_events"].append((e, phase))
         elif t in SUB_EVENTS:
-            cur["line_events"].append(e)
+            cur["line_events"].append((e, phase))   # phase = current possession phase
         elif t in PULL_EVENTS or t == OFFSIDES_OURS:
             # OFFSIDES_OURS (9) is a re-pull forced on the recording team -- a real pull the
             # API counts. (OFFSIDES_THEIRS is the opponent's, logged in their stream.)
@@ -103,6 +124,9 @@ def _split_points(events, where=""):
         elif t == BLOCK:
             cur["blocks"].append(e.get("defender"))
             cur["active"] = True
+            phase = "O"                  # we got the block -> we now have the disc
+        elif t in (THROWAWAY_THEIRS, STALL_THEIRS):
+            phase = "O"                  # opponent turned it over -> we now have the disc
         elif t == CALLAHAN_OURS:
             # the callahan scorer -- kept separate from regular (type-11) blocks so it is
             # attached to the opponent stream's CALLAHAN_THEIRS throw, not consumed onto a
@@ -120,13 +144,16 @@ def _split_points(events, where=""):
                 finalize("us")
             elif t == CALLAHAN_THEIRS:
                 end_poss("callahan")
+                phase = "D"              # we threw it (into a callahan) -> we lost the disc
                 finalize("them")         # we threw it, opponent caught a callahan
             elif t in (DROP, THROWAWAY_OURS, STALL_OURS):
                 end_poss("turnover")
+                phase = "D"              # our turnover -> we are now on defense
         elif t == SCORE_THEIRS:
             finalize("them")
         elif t in QUARTER_END:
             finalize(None)
+            quarter += 1
 
     finalize(None)
     return points
@@ -190,6 +217,7 @@ def _annotated(side, team, opp, event, **extra):
         "point_id": None, "possession_id": None, "sequence_id": None,
         "offense_team_id": None, "defense_team_id": None, "defender_id": None,
         "home_score": None, "away_score": None, "scorer_side": None,
+        "line_phase": None, "quarter": None,
     }
     row.update(extra)
     return row
@@ -241,13 +269,32 @@ def build_timeline(home_events, away_events, home_team, away_team, where=""):
         common = dict(point_id=pid, home_score=enter_h, away_score=enter_a,
                       scorer_side=scorer)
 
-        # line + pull events (both streams)
+        # line + pull events (both streams). Line events carry the possession phase the
+        # players on them entered with ('O'/'D') plus the quarter, for stg_point_lineups.
         for pt, side in ((hp, "H"), (ap, "A")):
             if not pt:
                 continue
-            for e in pt["line_events"] + pt["pull_events"]:
+            for e, ph in pt["line_events"]:
                 ann.append(_annotated(side, side_team[side], side_team[_other(side)],
-                                       e, **common))
+                                       e, line_phase=ph, quarter=pt["quarter"], **common))
+            for e in pt["pull_events"]:
+                ann.append(_annotated(side, side_team[side], side_team[_other(side)],
+                                       e, quarter=pt["quarter"], **common))
+
+        # block events: one per type-11 block and the type-12 callahan catch. Emitted
+        # directly (each names its defender) so blocks are counted from these rather than
+        # inferred via throwaway attachment -- which misses blocks on buzzer/unpaired points.
+        # team_id here is the blocking (defending) team.
+        for pt, side in ((hp, "H"), (ap, "A")):
+            if not pt:
+                continue
+            for defn in pt["blocks"]:
+                ann.append(_annotated(side, side_team[side], side_team[_other(side)],
+                                       {"type": BLOCK, "defender": defn}, **common))
+            if pt["callahan_defender"]:
+                ann.append(_annotated(
+                    side, side_team[side], side_team[_other(side)],
+                    {"type": CALLAHAN_OURS, "defender": pt["callahan_defender"]}, **common))
 
         # throw possessions, woven, with block attachment
         recv_poss = (hp if recv == "H" else ap)

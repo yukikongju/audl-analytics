@@ -24,7 +24,8 @@ def test_yards_forward_and_capped():
 @pytest.mark.parametrize("game_id", LOCAL_GAMES)
 def test_run_produces_four_tables(tmp_path, game_id):
     tables = run(game_id, out_dir=str(tmp_path), local=True)
-    assert set(tables) == {"stg_throws", "stg_pulls", "stg_point_lineups", "stg_games"}
+    assert set(tables) == {"stg_throws", "stg_pulls", "stg_point_lineups", "stg_blocks",
+                           "stg_games"}
     assert len(tables["stg_games"]) == 2  # one row per team
     assert tables["stg_throws"], "expected at least one throw"
     for name in tables:

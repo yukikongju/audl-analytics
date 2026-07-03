@@ -28,7 +28,8 @@ def _build(game_id):
     tables = run(game_id, out_dir="/tmp/audl-pgs-test", local=True)
     rows = build_player_game_stats(
         tables["stg_throws"], tables["stg_pulls"], tables["stg_point_lineups"],
-        team_slug_by_id=_slug_map(tables["stg_games"]), game_id=game_id,
+        blocks=tables["stg_blocks"], team_slug_by_id=_slug_map(tables["stg_games"]),
+        game_id=game_id,
     )
     return rows, tables
 
@@ -83,11 +84,10 @@ def test_internal_consistency(game_id):
 
 @needs_local
 def test_live_api_exact_fields_match():
-    """Assert the pure event-derived fields match the live API exactly (±1 on yards).
+    """Assert the exact fields (incl. the four O/D-point fields) match the live API (±1 yards).
 
-    The staging-limited fields (blocks/callahans/goals, hucksAttempted, pulls, O/D points)
-    inherit known upstream limitations and are reported by ``python -m player_game_stats``,
-    not asserted here. Skips cleanly when the network is unavailable.
+    The informational fields (secondsPlayed, opportunities) are best-effort and reported by
+    ``python -m player_game_stats``, not asserted here. Skips when the network is unavailable.
     """
     game_id = "2026-05-10-MTL-PIT"
     if game_id not in LOCAL_GAMES:

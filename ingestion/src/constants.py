@@ -97,6 +97,7 @@ KNOWN_EVENT_CODES = (
 HUCK_YARDS = 40          # downfield throw distance for a huck (matches tsg reconstruction)
 REDZONE_Y = 80           # y >= 80 is the attacking red zone (scoring-opportunity range)
 ENDZONE_Y = 100          # goal line; yards are capped here
+QUARTER_SECONDS = 720    # 12-minute quarters; the game clock `time` resets to 0 each period
 
 _WARNED_EVENT_CODES = set()
 

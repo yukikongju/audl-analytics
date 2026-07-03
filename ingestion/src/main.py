@@ -28,6 +28,7 @@ from pipeline_utils import (
     write_json,
 )
 from timeline import build_timeline
+from transform_blocks import extract_blocks_events
 from transform_games import extract_games
 from transform_point_lineups import extract_point_lineups_events
 from transform_pulls import extract_pulls_events
@@ -75,6 +76,7 @@ def run(ext_game_id, out_dir="outputs", local=False, dump_raw=False):
         "stg_throws": extract_throws_events(timeline, ctx),
         "stg_pulls": extract_pulls_events(timeline, ctx),
         "stg_point_lineups": extract_point_lineups_events(timeline, ctx),
+        "stg_blocks": extract_blocks_events(timeline, ctx),
         "stg_games": extract_games(game_json),
     }
 
