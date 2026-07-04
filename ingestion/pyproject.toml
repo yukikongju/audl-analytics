@@ -11,6 +11,8 @@ dependencies = [
 
 [project.scripts]
 audl-pipeline = "main:main"
+audl-extract-seasonal = "extract_seasonal:main"
+audl-extract-weekly = "extract_weekly:main"
 
 [dependency-groups]
 dev = [
