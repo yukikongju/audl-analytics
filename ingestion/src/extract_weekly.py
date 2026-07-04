@@ -18,10 +18,17 @@ Usage:
 
 import argparse
 import json
+import logging
+import sys
 from datetime import date, timedelta
 from pathlib import Path
+from typing import Any, Dict, List, Union
 
 from pipeline_utils import BASE_URL, game_date, http_get_json, write_json
+
+# Configure basic logging
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 # entity -> (subdir, api path template keyed on gameID)
 ENDPOINTS = {
@@ -30,49 +37,66 @@ ENDPOINTS = {
 }
 
 
-def load_games(data_dir, year):
-    """Read the seasonal games records; raise a helpful error if not extracted yet."""
+def load_games(data_dir: Path, year: int) -> List[Dict[str, Any]]:
+    """Read the seasonal games records; exit if not extracted yet."""
     games_file = data_dir / str(year) / "games" / f"games{year}.json"
+    
     if not games_file.exists():
-        raise SystemExit(
-            f"games file not found: {games_file}\n"
-            f"run `uv run audl-extract-seasonal --year {year}` first."
+        logger.error(
+            f"Games file not found: {games_file}\n"
+            f"Run `uv run audl-extract-seasonal --year {year}` first."
         )
-    with open(games_file) as f:
+        sys.exit(1)
+        
+    with open(games_file, "r") as f:
         return json.load(f)
 
 
-def fetch_game(data_dir, year, game_id, override=False):
-    """Fetch + write both per-game tables for one game. Returns files written."""
+def fetch_game(data_dir: Path, year: int, game_id: str, override: bool = False) -> int:
+    """Fetch + write both per-game tables for one game. Returns number of files written."""
     written = 0
     for entity, (subdir, path_tpl) in ENDPOINTS.items():
         target = data_dir / str(year) / subdir / f"{game_id}.json"
+        
         if target.exists() and not override:
             continue
+            
+        # Ensure the destination directory exists
+        target.parent.mkdir(parents=True, exist_ok=True)
+        
         url = f"{BASE_URL}/api/v1/{path_tpl.format(game_id=game_id)}"
-        write_json(http_get_json(url)["data"], target)
+        
+        # Safely extract data
+        response = http_get_json(url)
+        records = response.get("data", [])
+        
+        write_json(records, target)
         written += 1
+        
     return written
 
 
-def run(year, data_dir, start_date, end_date, override=False):
+def run(year: int, data_dir: Union[str, Path], start_date: str, end_date: str, override: bool = False) -> None:
     """Fetch per-game data for all games with a date in [start_date, end_date]."""
     data_dir = Path(data_dir).expanduser()
     games = load_games(data_dir, year)
 
     selected = [g for g in games if start_date <= game_date(g["gameID"]) <= end_date]
-    print(f"{len(selected)} game(s) in {start_date}..{end_date} (of {len(games)} total)")
+    logger.info(f"{len(selected)} game(s) in {start_date}..{end_date} (of {len(games)} total)")
 
     for g in selected:
         game_id = g["gameID"]
         try:
             written = fetch_game(data_dir, year, game_id, override=override)
-            print(f"  {game_id}  {'skip' if written == 0 else f'{written} file(s)'}")
-        except Exception as e:  # one bad game shouldn't abort the batch
-            print(f"  {game_id}  WARNING: {e}")
+            status = "skip" if written == 0 else f"{written} file(s)"
+            logger.info(f"  {game_id:20s} {status}")
+        except Exception as e:
+            # One bad game shouldn't abort the batch
+            logger.warning(f"  {game_id:20s} FAILED: {e}")
 
 
-def arg_parse():
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     today = date.today()
     p = argparse.ArgumentParser(description="Extract per-game AUDL data (playerGameStats/gameEvents) for a date window.")
     p.add_argument("--year", type=int, default=today.year,
@@ -88,10 +112,16 @@ def arg_parse():
     return p.parse_args()
 
 
-def main():
-    args = arg_parse()
-    print(f"Extracting weekly data for {args.year} ({args.start_date}..{args.end_date})")
-    run(args.year, args.data_dir, args.start_date, args.end_date, override=args.override)
+def main() -> None:
+    args = parse_args()
+    logger.info(f"Extracting weekly data for {args.year} ({args.start_date}..{args.end_date})")
+    run(
+        year=args.year,
+        data_dir=args.data_dir,
+        start_date=args.start_date,
+        end_date=args.end_date,
+        override=args.override
+    )
 
 
 if __name__ == "__main__":
