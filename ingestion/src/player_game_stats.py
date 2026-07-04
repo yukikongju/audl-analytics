@@ -296,22 +296,21 @@ def main():
 
     p = argparse.ArgumentParser(description="Reconcile reconstructed player stats vs the API.")
     p.add_argument("game_id")
-    p.add_argument("--local", action="store_true", help="build staging from local samples")
     args = p.parse_args()
 
-    tables = run(args.game_id, out_dir="/tmp/audl-pgs", local=args.local)
-    slug = _slug_map(tables["stg_games"])
+    tables = run(args.game_id, processed_root="/tmp/audl-pgs")
+    slug = _slug_map(tables["ext_games"])
     built = build_player_game_stats(
-        tables["stg_throws"], tables["stg_pulls"], tables["stg_point_lineups"],
-        blocks=tables["stg_blocks"], team_slug_by_id=slug, game_id=args.game_id,
+        tables["ext_throws"], tables["ext_pulls"], tables["ext_point_lineups"],
+        blocks=tables["ext_blocks"], team_slug_by_id=slug, game_id=args.game_id,
     )
     api_rows = fetch_player_game_stats(args.game_id)
     _print_report(_compare(built, api_rows), args.game_id)
 
 
-def _slug_map(stg_games):
-    """teamSeasonId -> ext_team_id slug, from stg_games rows."""
-    return {r["teamSeasonId"]: r["ext_team_id"] for r in stg_games}
+def _slug_map(ext_games):
+    """teamSeasonId -> ext_team_id slug, from ext_games rows."""
+    return {r["teamSeasonId"]: r["ext_team_id"] for r in ext_games}
 
 
 if __name__ == "__main__":

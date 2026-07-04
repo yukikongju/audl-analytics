@@ -34,6 +34,6 @@ echo -e "\n ---- Testing staging schemas ----\n"
 for game in "${GAMES[@]}"; do
     ((i=i%N)); ((i++==0))
     echo "Processing: $game"
-    uv run python -m player_game_stats "$game" --local &
+    uv run python -m player_game_stats "$game" &
 done
 

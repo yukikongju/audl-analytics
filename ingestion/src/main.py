@@ -1,17 +1,20 @@
-"""AUDL/UFA staging pipeline entrypoint.
+"""AUDL/UFA processing pipeline entrypoint.
 
-Given an external game id (e.g. ``2026-05-10-MTL-PIT``), fetch the two raw sources and
-write the four staging tables as JSON to ``outputs/<game_id>/``:
+Given an external game id (e.g. ``2026-05-10-MTL-PIT``), read the raw extracted payloads
+from ``AUDL_SOURCE_DIR`` (no network) and write the five ``ext_*`` tables as JSON to the
+Hive-partitioned ``AUDL_PROCESSED_DIR`` data lake, one file per game:
 
-    outputs/<game_id>/stg_throws.json
-    outputs/<game_id>/stg_pulls.json
-    outputs/<game_id>/stg_point_lineups.json
-    outputs/<game_id>/stg_games.json
+    <PROCESSED_DIR>/ext_throws/season=<year>/month=<MM>/<game_id>.json
+    <PROCESSED_DIR>/ext_pulls/season=<year>/month=<MM>/<game_id>.json
+    <PROCESSED_DIR>/ext_point_lineups/season=<year>/month=<MM>/<game_id>.json
+    <PROCESSED_DIR>/ext_blocks/season=<year>/month=<MM>/<game_id>.json
+    <PROCESSED_DIR>/ext_games/season=<year>/month=<MM>/<game_id>.json
+
+Requires the game to have been extracted first (``audl-extract-weekly``).
 
 Usage:
     uv run audl-pipeline 2026-05-10-MTL-PIT
-    uv run audl-pipeline 2026-05-10-MTL-PIT --local   # read local sample files, no network
-    uv run audl-pipeline 2026-05-10-MTL-PIT --out-dir outputs
+    uv run audl-pipeline 2026-05-10-MTL-PIT --source-dir /tmp/src --processed-dir /tmp/out
 
     # or as a module: uv run python -m main 2026-05-10-MTL-PIT
 """
@@ -20,11 +23,13 @@ import argparse
 from pathlib import Path
 
 from pipeline_utils import (
-    BASE_URL,
     game_date,
-    http_get_json,
-    load_local_game,
-    load_local_game_events,
+    game_month,
+    game_year,
+    load_source_game_events,
+    load_source_game_stats,
+    partition_dir,
+    processed_dir,
     write_json,
 )
 from timeline import build_timeline
@@ -35,28 +40,15 @@ from transform_pulls import extract_pulls_events
 from transform_throws import extract_throws_events
 
 
-def fetch_game_data(ext_game_id):
-    """GET the game-stats JSON (``game``/``rosters``/``tsgHome``/``tsgAway``)."""
-    return http_get_json(f"{BASE_URL}/stats-pages/game/{ext_game_id}")
+def run(ext_game_id, source_root=None, processed_root=None):
+    """Read raw payloads from SOURCE_DIR, transform, and write the five ext_* tables.
 
-
-def fetch_game_events_data(ext_game_id):
-    """GET the gameEvents JSON (``data.homeEvents`` / ``data.awayEvents``)."""
-    return http_get_json(f"{BASE_URL}/api/v1/gameEvents?gameID={ext_game_id}")
-
-
-def run(ext_game_id, out_dir="outputs", local=False, dump_raw=False):
-    """Fetch, transform, and write the four staging tables. Returns a name->rows dict.
-
-    The three gameEvents transforms share one timeline, so it's built once here and passed
-    in. With ``dump_raw`` the two raw payloads are also written to ``<out_dir>/<id>/raw/``.
+    Returns a name->rows dict. The three gameEvents transforms share one timeline, so it's
+    built once here and passed in. Reads only from the data lake — no network access.
     """
-    if local:
-        game_json = load_local_game(ext_game_id)
-        events_json = load_local_game_events(ext_game_id)
-    else:
-        game_json = fetch_game_data(ext_game_id)
-        events_json = fetch_game_events_data(ext_game_id)
+    game_json = load_source_game_stats(ext_game_id, source_root)
+    # Extraction already unwrapped ``response["data"]``, so this is the inner dict.
+    data = load_source_game_events(ext_game_id, source_root)
 
     ctx = {
         "game_id": ext_game_id,
@@ -66,46 +58,42 @@ def run(ext_game_id, out_dir="outputs", local=False, dump_raw=False):
         "away_team_id": game_json["game"]["team_season_id_away"],
     }
 
-    data = events_json["data"]
     timeline = build_timeline(
         data["homeEvents"], data["awayEvents"],
         ctx["home_team_id"], ctx["away_team_id"], where=ctx["game_id"],
     )
 
     tables = {
-        "stg_throws": extract_throws_events(timeline, ctx),
-        "stg_pulls": extract_pulls_events(timeline, ctx),
-        "stg_point_lineups": extract_point_lineups_events(timeline, ctx),
-        "stg_blocks": extract_blocks_events(timeline, ctx),
-        "stg_games": extract_games(game_json),
+        "ext_throws": extract_throws_events(timeline, ctx),
+        "ext_pulls": extract_pulls_events(timeline, ctx),
+        "ext_point_lineups": extract_point_lineups_events(timeline, ctx),
+        "ext_blocks": extract_blocks_events(timeline, ctx),
+        "ext_games": extract_games(game_json),
     }
 
-    out = Path(out_dir) / ext_game_id
-    if dump_raw:
-        for name, payload in (("game", game_json), ("game_events", events_json)):
-            write_json(payload, out / "raw" / f"{name}.json")
+    root = Path(processed_root) if processed_root else processed_dir()
+    year, month = game_year(ext_game_id), game_month(ext_game_id)
     for name, rows in tables.items():
-        path = write_json(rows, out / "staging" / f"{name}.json")
+        path = write_json(rows, partition_dir(root, name, year, month) / f"{ext_game_id}.json")
         print(f"  {name:20s} {len(rows):5d} rows -> {path}")
 
     return tables
 
 
 def arg_parse():
-    p = argparse.ArgumentParser(description="Build AUDL staging tables for a game.")
+    p = argparse.ArgumentParser(description="Build AUDL ext_* tables for a game.")
     p.add_argument("ext_game_id", help="external game id, e.g. 2026-05-10-MTL-PIT")
-    p.add_argument("--out-dir", default="outputs", help="output directory (default: outputs)")
-    p.add_argument("--local", action="store_true",
-                   help="read local sample files instead of fetching")
-    p.add_argument("--dump-raw", action="store_true",
-                   help="also write the raw game/gameEvents payloads to <out-dir>/<id>/raw/")
+    p.add_argument("--source-dir", default=None,
+                   help="data lake root to read from (default: $AUDL_SOURCE_DIR)")
+    p.add_argument("--processed-dir", default=None,
+                   help="data lake root to write to (default: $AUDL_PROCESSED_DIR)")
     return p.parse_args()
 
 
 def main():
     args = arg_parse()
-    print(f"Building staging tables for {args.ext_game_id}")
-    run(args.ext_game_id, out_dir=args.out_dir, local=args.local, dump_raw=args.dump_raw)
+    print(f"Building ext tables for {args.ext_game_id}")
+    run(args.ext_game_id, source_root=args.source_dir, processed_root=args.processed_dir)
 
 
 if __name__ == "__main__":

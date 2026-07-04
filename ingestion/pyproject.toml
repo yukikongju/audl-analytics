@@ -2,7 +2,7 @@
 name = "audl-ingestion"
 version = "0.1.0"
 description = "AUDL/UFA analytics ingestion pipeline"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = [
     "audl>=0.0.19",
     "pandas>=2.2",

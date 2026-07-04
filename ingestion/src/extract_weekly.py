@@ -1,10 +1,12 @@
 """Weekly extraction job.
 
-For every game played within a date window, pulls the per-game data (playerGameStats and
-gameEvents) and writes each to the year-partitioned data lake as JSON:
+For every game played within a date window, pulls the per-game data (playerGameStats,
+gameEvents, and the game-stats payload) and writes each to the Hive-partitioned data lake
+(under ``AUDL_SOURCE_DIR``) as JSON:
 
-    ~/Data/AUDLStats/<year>/player_game_stats/<gameID>.json
-    ~/Data/AUDLStats/<year>/game_events/<gameID>.json
+    <SOURCE_DIR>/player_game_stats/season=<year>/month=<MM>/<gameID>.json
+    <SOURCE_DIR>/game_events/season=<year>/month=<MM>/<gameID>.json
+    <SOURCE_DIR>/game_stats/season=<year>/month=<MM>/<gameID>.json
 
 The window defaults to the last ~2 weeks (today-14 .. today-1), so a weekly cron picks up
 newly-played games. The set of games is read from the seasonal games file, so run
@@ -24,22 +26,25 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
-from pipeline_utils import BASE_URL, game_date, http_get_json, write_json
+from pipeline_utils import BASE_URL, game_date, game_month, http_get_json, source_dir, write_json
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-# entity -> (subdir, api path template keyed on gameID)
+# entity -> (subdir, full url template keyed on gameID, unwrap-"data")
+# game_stats hits stats-pages/game (different base path) and is NOT wrapped in "data",
+# so we persist the full payload as-is; the api/v1 endpoints are unwrapped to their "data".
 ENDPOINTS = {
-    "player_game_stats": ("player_game_stats", "playerGameStats?gameID={game_id}"),
-    "game_events": ("game_events", "gameEvents?gameID={game_id}"),
+    "player_game_stats": ("player_game_stats", f"{BASE_URL}/api/v1/playerGameStats?gameID={{game_id}}", True),
+    "game_events": ("game_events", f"{BASE_URL}/api/v1/gameEvents?gameID={{game_id}}", True),
+    "game_stats": ("game_stats", f"{BASE_URL}/stats-pages/game/{{game_id}}", False),
 }
 
 
 def load_games(data_dir: Path, year: int) -> List[Dict[str, Any]]:
     """Read the seasonal games records; exit if not extracted yet."""
-    games_file = data_dir / str(year) / "games" / f"games{year}.json"
+    games_file = data_dir / "games" / f"season={year}" / "games.json"
     
     if not games_file.exists():
         logger.error(
@@ -55,30 +60,28 @@ def load_games(data_dir: Path, year: int) -> List[Dict[str, Any]]:
 def fetch_game(data_dir: Path, year: int, game_id: str, override: bool = False) -> int:
     """Fetch + write both per-game tables for one game. Returns number of files written."""
     written = 0
-    for entity, (subdir, path_tpl) in ENDPOINTS.items():
-        target = data_dir / str(year) / subdir / f"{game_id}.json"
-        
+    for entity, (subdir, url_tpl, unwrap) in ENDPOINTS.items():
+        target = data_dir / subdir / f"season={year}" / f"month={game_month(game_id)}" / f"{game_id}.json"
+
         if target.exists() and not override:
             continue
-            
+
         # Ensure the destination directory exists
         target.parent.mkdir(parents=True, exist_ok=True)
-        
-        url = f"{BASE_URL}/api/v1/{path_tpl.format(game_id=game_id)}"
-        
-        # Safely extract data
-        response = http_get_json(url)
-        records = response.get("data", [])
-        
+
+        response = http_get_json(url_tpl.format(game_id=game_id))
+        # api/v1 endpoints wrap payload in "data"; stats-pages/game returns it directly.
+        records = response.get("data", []) if unwrap else response
+
         write_json(records, target)
         written += 1
-        
+
     return written
 
 
-def run(year: int, data_dir: Union[str, Path], start_date: str, end_date: str, override: bool = False) -> None:
+def run(year: int, data_dir: Union[str, Path, None], start_date: str, end_date: str, override: bool = False) -> None:
     """Fetch per-game data for all games with a date in [start_date, end_date]."""
-    data_dir = Path(data_dir).expanduser()
+    data_dir = Path(data_dir).expanduser() if data_dir else source_dir()
     games = load_games(data_dir, year)
 
     selected = [g for g in games if start_date <= game_date(g["gameID"]) <= end_date]
@@ -101,8 +104,8 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Extract per-game AUDL data (playerGameStats/gameEvents) for a date window.")
     p.add_argument("--year", type=int, default=today.year,
                    help="season year, locates the games file (default: current year)")
-    p.add_argument("--data-dir", default="~/Data/AUDLStats",
-                   help="data lake root (default: ~/Data/AUDLStats)")
+    p.add_argument("--data-dir", default=None,
+                   help="data lake root (default: $AUDL_SOURCE_DIR)")
     p.add_argument("--start-date", default=(today - timedelta(days=14)).isoformat(),
                    help="ISO start date, inclusive (default: today-14)")
     p.add_argument("--end-date", default=(today - timedelta(days=1)).isoformat(),

@@ -1,7 +1,7 @@
 """Validate reconstructed player game stats.
 
 Layer 1 (always runs with local sample data): team-level reconciliation vs the tsg summary
-fields in stg_games (ground truth) + internal consistency.
+fields in ext_games (ground truth) + internal consistency.
 
 Layer 2 (skipped unless the network / a fixture is available): join to the live
 playerGameStats API by playerID and assert the core count fields match.
@@ -10,7 +10,7 @@ playerGameStats API by playerID and assert the core count fields match.
 import pytest
 
 from main import run
-from pipeline_utils import list_local_game_ids
+from pipeline_utils import list_source_game_ids
 from player_game_stats import (
     CORE_FIELDS,
     EXACT_FIELDS,
@@ -20,15 +20,15 @@ from player_game_stats import (
     fetch_player_game_stats,
 )
 
-LOCAL_GAMES = list_local_game_ids()
-needs_local = pytest.mark.skipif(not LOCAL_GAMES, reason="no local AUDLStats sample data")
+LOCAL_GAMES = list_source_game_ids()
+needs_local = pytest.mark.skipif(not LOCAL_GAMES, reason="no extracted AUDLStats sample data")
 
 
 def _build(game_id):
-    tables = run(game_id, out_dir="/tmp/audl-pgs-test", local=True)
+    tables = run(game_id, processed_root="/tmp/audl-pgs-test")
     rows = build_player_game_stats(
-        tables["stg_throws"], tables["stg_pulls"], tables["stg_point_lineups"],
-        blocks=tables["stg_blocks"], team_slug_by_id=_slug_map(tables["stg_games"]),
+        tables["ext_throws"], tables["ext_pulls"], tables["ext_point_lineups"],
+        blocks=tables["ext_blocks"], team_slug_by_id=_slug_map(tables["ext_games"]),
         game_id=game_id,
     )
     return rows, tables
@@ -40,10 +40,10 @@ def _sum(rows, team_slug, field):
 
 @needs_local
 @pytest.mark.parametrize("game_id", LOCAL_GAMES)
-def test_team_totals_reconcile_with_stg_games(game_id):
+def test_team_totals_reconcile_with_ext_games(game_id):
     rows, tables = _build(game_id)
-    slug = _slug_map(tables["stg_games"])
-    for g in tables["stg_games"]:
+    slug = _slug_map(tables["ext_games"])
+    for g in tables["ext_games"]:
         s = slug[g["teamSeasonId"]]
         assert _sum(rows, s, "completions") == g["completionsNumer"], f"{game_id} {s} completions"
         assert _sum(rows, s, "blocks") == g["blocks"], f"{game_id} {s} blocks"
@@ -66,7 +66,7 @@ _SENTINEL_IDS = {None, "", "unknown"}
 def test_internal_consistency(game_id):
     rows, tables = _build(game_id)
     assert rows, "expected player rows"
-    lineup_players = {p for r in tables["stg_point_lineups"] for p in r["lineup"]}
+    lineup_players = {p for r in tables["ext_point_lineups"] for p in r["lineup"]}
     for r in rows:
         pid = r["playerID"]
         # a real player who took the field appears in a lineup with >=1 point; anything with

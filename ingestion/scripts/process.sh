@@ -34,7 +34,7 @@ echo -e "\n ---- Processing staging tables for ${#GAMES[@]} games ---- \n"
 for game in "${GAMES[@]}"; do
     ((i=i%N)); ((i++==0))
     echo "Processing: $game"
-    uv run audl-pipeline "$game" --local --dump-raw &
+    uv run audl-pipeline "$game" &
 done
 
 wait

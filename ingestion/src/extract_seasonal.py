@@ -1,11 +1,11 @@
 """Seasonal extraction job.
 
 Pulls the season-level reference data (players, teams, games) for a year and writes each
-to the year-partitioned data lake as JSON:
+to the Hive-partitioned data lake (under ``AUDL_SOURCE_DIR``) as JSON:
 
-    ~/Data/AUDLStats/<year>/players/players<year>.json
-    ~/Data/AUDLStats/<year>/teams/teams<year>.json
-    ~/Data/AUDLStats/<year>/games/games<year>.json
+    <SOURCE_DIR>/players/season=<year>/players.json
+    <SOURCE_DIR>/teams/season=<year>/teams.json
+    <SOURCE_DIR>/games/season=<year>/games.json
 
 Each ufastats endpoint returns ``{"object": ..., "data": [...]}``; we persist the ``data``
 records. Existing files are skipped unless ``--override`` is passed, so re-runs are cheap.
@@ -21,7 +21,7 @@ from datetime import date
 from pathlib import Path
 from typing import Union
 
-from pipeline_utils import BASE_URL, http_get_json, write_json
+from pipeline_utils import BASE_URL, http_get_json, source_dir, write_json
 
 # Configure basic logging for the pipeline
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -35,12 +35,12 @@ ENDPOINTS = {
 }
 
 
-def run(year: int, data_dir: Union[str, Path], override: bool = False) -> None:
+def run(year: int, data_dir: Union[str, Path, None] = None, override: bool = False) -> None:
     """Fetch and write the three seasonal tables for ``year``."""
-    data_dir = Path(data_dir).expanduser()
-    
+    data_dir = Path(data_dir).expanduser() if data_dir else source_dir()
+
     for entity, (subdir, path_tpl) in ENDPOINTS.items():
-        target = data_dir / str(year) / subdir / f"{subdir}{year}.json"
+        target = data_dir / subdir / f"season={year}" / f"{subdir}.json"
         
         if target.exists() and not override:
             logger.info(f"  {entity:8s} skip (exists) -> {target}")
@@ -69,8 +69,8 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Extract seasonal AUDL reference data (players/teams/games).")
     p.add_argument("--year", type=int, default=date.today().year,
                    help="season year (default: current year)")
-    p.add_argument("--data-dir", default="~/Data/AUDLStats",
-                   help="data lake root (default: ~/Data/AUDLStats)")
+    p.add_argument("--data-dir", default=None,
+                   help="data lake root (default: $AUDL_SOURCE_DIR)")
     p.add_argument("--override", action="store_true",
                    help="overwrite existing files (default: skip existing)")
     return p.parse_args()
