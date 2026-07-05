@@ -1,0 +1,11 @@
+version: 2
+sources:
+  - name: external
+    meta:
+      external_location: "read_json_auto('{{ env_var('AUDL_PROCESSED_DIR') }}/{name}/**/*.json', hive_partitioning=true, union_by_name=true)"
+    tables:
+      - name: ext_blocks
+      - name: ext_games
+      - name: ext_point_lineups
+      - name: ext_pulls
+      - name: ext_throws

@@ -1,0 +1,11 @@
+analytics:
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('AUDL_ANALYTICS_DIR') }}/dev.duckdb"
+      threads: 1
+    prod:
+      type: duckdb
+      path:  "{{ env_var('AUDL_ANALYTICS_DIR') }}/prod.duckdb"
+      threads: 4
+  target: dev
