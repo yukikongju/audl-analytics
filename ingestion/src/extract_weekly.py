@@ -2,11 +2,11 @@
 
 For every game played within a date window, pulls the per-game data (playerGameStats,
 gameEvents, and the game-stats payload) and writes each to the Hive-partitioned data lake
-(under ``AUDL_SOURCE_DIR``) as JSON:
+(under ``AUDL_SOURCE_DIR``) as parquet:
 
-    <SOURCE_DIR>/player_game_stats/season=<year>/month=<MM>/<gameID>.json
-    <SOURCE_DIR>/game_events/season=<year>/month=<MM>/<gameID>.json
-    <SOURCE_DIR>/game_stats/season=<year>/month=<MM>/<gameID>.json
+    <SOURCE_DIR>/player_game_stats/season=<year>/month=<MM>/<gameID>.parquet
+    <SOURCE_DIR>/game_events/season=<year>/month=<MM>/<gameID>.parquet
+    <SOURCE_DIR>/game_stats/season=<year>/month=<MM>/<gameID>.parquet
 
 The window defaults to the last ~2 weeks (today-14 .. today-1), so a weekly cron picks up
 newly-played games. The set of games is read from the seasonal games file, so run
@@ -15,18 +15,27 @@ newly-played games. The set of games is read from the seasonal games file, so ru
 Usage:
     uv run audl-extract-weekly --year 2026
     uv run audl-extract-weekly --year 2026 --start-date 2026-05-10 --end-date 2026-05-10
-    uv run audl-extract-weekly --year 2026 --override
+    uv run audl-extract-weekly --year 2026 --format json|parquet --override
 """
 
 import argparse
-import json
 import logging
 import sys
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
-from pipeline_utils import BASE_URL, game_date, game_month, http_get_json, source_dir, write_json
+from pipeline_utils import (
+    BASE_URL,
+    FORMATS,
+    data_suffix,
+    game_date,
+    game_month,
+    http_get_json,
+    read_table,
+    source_dir,
+    write_table,
+)
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -42,26 +51,27 @@ ENDPOINTS = {
 }
 
 
-def load_games(data_dir: Path, year: int) -> List[Dict[str, Any]]:
+def load_games(data_dir: Path, year: int, fmt: str = "parquet") -> List[Dict[str, Any]]:
     """Read the seasonal games records; exit if not extracted yet."""
-    games_file = data_dir / "games" / f"season={year}" / "games.json"
-    
+    games_file = data_dir / "games" / f"season={year}" / f"games{data_suffix(fmt)}"
+
     if not games_file.exists():
         logger.error(
             f"Games file not found: {games_file}\n"
-            f"Run `uv run audl-extract-seasonal --year {year}` first."
+            f"Run `uv run audl-extract-seasonal --year {year} --format {fmt}` first."
         )
         sys.exit(1)
-        
-    with open(games_file, "r") as f:
-        return json.load(f)
+
+    return read_table(games_file)
 
 
-def fetch_game(data_dir: Path, year: int, game_id: str, override: bool = False) -> int:
+def fetch_game(data_dir: Path, year: int, game_id: str, override: bool = False,
+               fmt: str = "parquet") -> int:
     """Fetch + write both per-game tables for one game. Returns number of files written."""
     written = 0
     for entity, (subdir, url_tpl, unwrap) in ENDPOINTS.items():
-        target = data_dir / subdir / f"season={year}" / f"month={game_month(game_id)}" / f"{game_id}.json"
+        target = (data_dir / subdir / f"season={year}" / f"month={game_month(game_id)}"
+                  / f"{game_id}{data_suffix(fmt)}")
 
         if target.exists() and not override:
             continue
@@ -73,16 +83,17 @@ def fetch_game(data_dir: Path, year: int, game_id: str, override: bool = False) 
         # api/v1 endpoints wrap payload in "data"; stats-pages/game returns it directly.
         records = response.get("data", []) if unwrap else response
 
-        write_json(records, target)
+        write_table(records, target)
         written += 1
 
     return written
 
 
-def run(year: int, data_dir: Union[str, Path, None], start_date: str, end_date: str, override: bool = False) -> None:
+def run(year: int, data_dir: Union[str, Path, None], start_date: str, end_date: str,
+        override: bool = False, fmt: str = "parquet") -> None:
     """Fetch per-game data for all games with a date in [start_date, end_date]."""
     data_dir = Path(data_dir).expanduser() if data_dir else source_dir()
-    games = load_games(data_dir, year)
+    games = load_games(data_dir, year, fmt)
 
     selected = [g for g in games if start_date <= game_date(g["gameID"]) <= end_date]
     logger.info(f"{len(selected)} game(s) in {start_date}..{end_date} (of {len(games)} total)")
@@ -90,7 +101,7 @@ def run(year: int, data_dir: Union[str, Path, None], start_date: str, end_date: 
     for g in selected:
         game_id = g["gameID"]
         try:
-            written = fetch_game(data_dir, year, game_id, override=override)
+            written = fetch_game(data_dir, year, game_id, override=override, fmt=fmt)
             status = "skip" if written == 0 else f"{written} file(s)"
             logger.info(f"  {game_id:20s} {status}")
         except Exception as e:
@@ -112,18 +123,21 @@ def parse_args() -> argparse.Namespace:
                    help="ISO end date, inclusive (default: today-1)")
     p.add_argument("--override", action="store_true",
                    help="overwrite existing files (default: skip existing)")
+    p.add_argument("--format", dest="fmt", choices=FORMATS, default="parquet",
+                   help="data file format (choices: parquet, json)")
     return p.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    logger.info(f"Extracting weekly data for {args.year} ({args.start_date}..{args.end_date})")
+    logger.info(f"Extracting weekly data for {args.year} ({args.start_date}..{args.end_date}, {args.fmt})")
     run(
         year=args.year,
         data_dir=args.data_dir,
         start_date=args.start_date,
         end_date=args.end_date,
-        override=args.override
+        override=args.override,
+        fmt=args.fmt,
     )
 
 

@@ -30,7 +30,7 @@ def test_run_produces_five_tables(tmp_path, game_id):
     assert tables["ext_throws"], "expected at least one throw"
     year, month = game_year(game_id), game_month(game_id)
     for name in tables:
-        assert (tmp_path / name / f"season={year}" / f"month={month}" / f"{game_id}.json").exists()
+        assert (tmp_path / name / f"season={year}" / f"month={month}" / f"{game_id}.parquet").exists()
 
 
 @needs_local

@@ -1,14 +1,18 @@
 """Shared helpers for the AUDL staging transforms.
 
-Kept deliberately dependency-light: only ``requests`` (for fetching) and stdlib. The
-transforms themselves are pure functions over already-fetched JSON, so they can be unit
-tested against the local sample files in ``~/Data/AUDLStats/`` without any network.
+The transforms themselves are pure functions over already-fetched JSON. The data lake is
+stored as parquet (see ``write_parquet``/``read_parquet``): row-oriented datasets become
+columnar parquet, while nested composite payloads (gameEvents/game-stats) round-trip
+losslessly as a JSON payload column.
 """
 
 import json
 import os
 import requests
 from pathlib import Path
+
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 BASE_URL = "https://www.backend.ufastats.com"
 
@@ -86,28 +90,94 @@ def write_json(obj, path):
     return os.fspath(path)
 
 
-# --- SOURCE_DIR loaders (read raw extracted JSON from the data lake) ----------------------
-def load_source_game_stats(game_id, root=None):
+def write_parquet(obj, path):
+    """Write ``obj`` as parquet, creating parent dirs. Returns the path string.
+
+    A list of dicts becomes a columnar parquet table. Anything Arrow can't tabularize
+    (a nested composite dict like the gameEvents / game-stats payloads, or a ragged list)
+    is stored losslessly as a single JSON string in a ``_payload`` column. The read side
+    (``read_parquet``) uses the ``container`` schema-metadata flag to invert this.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    table = None
+    if isinstance(obj, list):
+        try:
+            table = pa.Table.from_pylist(obj).replace_schema_metadata({b"container": b"list"})
+        except Exception:
+            table = None
+    if table is None:
+        table = pa.table({"_payload": [json.dumps(obj)]}).replace_schema_metadata({b"container": b"json"})
+    pq.write_table(table, path)
+    return os.fspath(path)
+
+
+def read_parquet(path):
+    """Inverse of ``write_parquet``: return the original list or nested payload.
+
+    Reads the single file directly (``ParquetFile``) so Hive ``season=/month=`` ancestors
+    aren't inferred as extra partition columns — the round-trip returns exactly what was
+    written.
+    """
+    table = pq.ParquetFile(os.fspath(path)).read()
+    container = (table.schema.metadata or {}).get(b"container", b"list")
+    if container == b"json":
+        return json.loads(table.column("_payload")[0].as_py())
+    return table.to_pylist()
+
+
+# --- Format dispatch (parquet | json) -----------------------------------------------------
+FORMATS = ("parquet", "json")
+
+
+def data_suffix(fmt):
+    """File extension for a data-lake ``fmt`` (``"parquet"`` -> ``".parquet"``)."""
+    if fmt not in FORMATS:
+        raise ValueError(f"unknown format {fmt!r} (expected one of {FORMATS})")
+    return f".{fmt}"
+
+
+def write_table(obj, path):
+    """Write ``obj`` as parquet or JSON, dispatched on ``path``'s extension."""
+    suffix = Path(path).suffix
+    if suffix == ".parquet":
+        return write_parquet(obj, path)
+    if suffix == ".json":
+        return write_json(obj, path)
+    raise ValueError(f"unsupported data extension {suffix!r} for {path}")
+
+
+def read_table(path):
+    """Read a parquet or JSON data-lake file, dispatched on ``path``'s extension."""
+    suffix = Path(path).suffix
+    if suffix == ".parquet":
+        return read_parquet(path)
+    if suffix == ".json":
+        with open(path) as f:
+            return json.load(f)
+    raise ValueError(f"unsupported data extension {suffix!r} for {path}")
+
+
+# --- SOURCE_DIR loaders (read raw extracted data from the data lake) ----------------------
+def load_source_game_stats(game_id, root=None, fmt="parquet"):
     """Load the extracted game-stats payload (the full ``stats-pages/game`` shape)."""
     root = Path(root) if root else source_dir()
-    path = partition_dir(root, "game_stats", game_year(game_id), game_month(game_id)) / f"{game_id}.json"
-    with open(path) as f:
-        return json.load(f)
+    path = partition_dir(root, "game_stats", game_year(game_id), game_month(game_id)) / f"{game_id}{data_suffix(fmt)}"
+    return read_table(path)
 
 
-def load_source_game_events(game_id, root=None):
+def load_source_game_events(game_id, root=None, fmt="parquet"):
     """Load the extracted gameEvents payload.
 
     Extraction saves ``response["data"]``, so this is already the inner dict
     (``{homeEvents, awayEvents, ...}``) — callers use it directly, no ``["data"]``.
     """
     root = Path(root) if root else source_dir()
-    path = partition_dir(root, "game_events", game_year(game_id), game_month(game_id)) / f"{game_id}.json"
-    with open(path) as f:
-        return json.load(f)
+    path = partition_dir(root, "game_events", game_year(game_id), game_month(game_id)) / f"{game_id}{data_suffix(fmt)}"
+    return read_table(path)
 
 
-def list_source_game_ids(root=None):
+def list_source_game_ids(root=None, fmt="parquet"):
     """gameIDs available in the SOURCE_DIR ``game_stats`` partitions (empty if unset)."""
     if root is None:
         try:
@@ -117,4 +187,4 @@ def list_source_game_ids(root=None):
     base = Path(root) / "game_stats"
     if not base.exists():
         return []
-    return sorted(p.stem for p in base.glob("season=*/month=*/*.json"))
+    return sorted(p.stem for p in base.glob(f"season=*/month=*/*{data_suffix(fmt)}"))

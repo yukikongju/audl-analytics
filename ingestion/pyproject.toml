@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
     "audl>=0.0.19",
     "pandas>=2.2",
+    "pyarrow>=15",
     "requests>=2.31",
 ]
 

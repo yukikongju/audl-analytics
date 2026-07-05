@@ -1,18 +1,18 @@
 """Seasonal extraction job.
 
 Pulls the season-level reference data (players, teams, games) for a year and writes each
-to the Hive-partitioned data lake (under ``AUDL_SOURCE_DIR``) as JSON:
+to the Hive-partitioned data lake (under ``AUDL_SOURCE_DIR``) as parquet:
 
-    <SOURCE_DIR>/players/season=<year>/players.json
-    <SOURCE_DIR>/teams/season=<year>/teams.json
-    <SOURCE_DIR>/games/season=<year>/games.json
+    <SOURCE_DIR>/players/season=<year>/players.parquet
+    <SOURCE_DIR>/teams/season=<year>/teams.parquet
+    <SOURCE_DIR>/games/season=<year>/games.parquet
 
 Each ufastats endpoint returns ``{"object": ..., "data": [...]}``; we persist the ``data``
 records. Existing files are skipped unless ``--override`` is passed, so re-runs are cheap.
 
 Usage:
     uv run audl-extract-seasonal --year 2026
-    uv run audl-extract-seasonal --year 2026 --override
+    uv run audl-extract-seasonal --year 2026 --format json|parquet --override
 """
 
 import argparse
@@ -21,7 +21,7 @@ from datetime import date
 from pathlib import Path
 from typing import Union
 
-from pipeline_utils import BASE_URL, http_get_json, source_dir, write_json
+from pipeline_utils import BASE_URL, FORMATS, data_suffix, http_get_json, source_dir, write_table
 
 # Configure basic logging for the pipeline
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -35,28 +35,29 @@ ENDPOINTS = {
 }
 
 
-def run(year: int, data_dir: Union[str, Path, None] = None, override: bool = False) -> None:
+def run(year: int, data_dir: Union[str, Path, None] = None, override: bool = False,
+        fmt: str = "parquet") -> None:
     """Fetch and write the three seasonal tables for ``year``."""
     data_dir = Path(data_dir).expanduser() if data_dir else source_dir()
 
     for entity, (subdir, path_tpl) in ENDPOINTS.items():
-        target = data_dir / subdir / f"season={year}" / f"{subdir}.json"
-        
+        target = data_dir / subdir / f"season={year}" / f"{subdir}{data_suffix(fmt)}"
+
         if target.exists() and not override:
             logger.info(f"  {entity:8s} skip (exists) -> {target}")
             continue
-        
+
         # Ensure the destination directory exists before writing
         target.parent.mkdir(parents=True, exist_ok=True)
-        
+
         url = f"{BASE_URL}/api/v1/{path_tpl.format(year=year)}"
-        
+
         try:
             response = http_get_json(url)
             # Use .get() to avoid KeyErrors if the API response shape changes unexpectedly
             records = response.get("data", [])
-            
-            write_json(records, target)
+
+            write_table(records, target)
             logger.info(f"  {entity:8s} {len(records):5d} records -> {target}")
             
         except Exception as e:
@@ -73,13 +74,15 @@ def parse_args() -> argparse.Namespace:
                    help="data lake root (default: $AUDL_SOURCE_DIR)")
     p.add_argument("--override", action="store_true",
                    help="overwrite existing files (default: skip existing)")
+    p.add_argument("--format", dest="fmt", choices=FORMATS, default="parquet",
+                   help="data file format (choices: parquet, json)")
     return p.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    logger.info(f"Extracting seasonal data for {args.year}")
-    run(year=args.year, data_dir=args.data_dir, override=args.override)
+    logger.info(f"Extracting seasonal data for {args.year} ({args.fmt})")
+    run(year=args.year, data_dir=args.data_dir, override=args.override, fmt=args.fmt)
 
 
 if __name__ == "__main__":

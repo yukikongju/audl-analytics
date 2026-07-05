@@ -142,7 +142,7 @@ def build_player_game_stats(throws, pulls, lineups, blocks=None, team_slug_by_id
         d = b["defender_id"]
         if d is None:
             continue
-        team_of.setdefault(d, b["defense_team_id"])
+        team_of.setdefault(d, b["defense_ext_team_id"])
         bump(d, "blocks")
         if b["is_callahan"]:            # a callahan is a block that is also a defensive goal
             bump(d, "callahans")
