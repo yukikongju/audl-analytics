@@ -1,27 +1,30 @@
 #!/bin/bash
 
-# 1. Use Python to parse the JSON and output the filtered gameIDs as a space-separated string
-GAME_IDS=$(uv run python -c '
-import pandas as pd
+# Season and format must match what extract_weekly wrote to the data lake.
+YEAR="${1:-2026}"
+FMT="${2:-json}"
+
+# 1. Select gameIDs the same way src/extract_weekly.py does: filter on the date
+#    prefix parsed from the gameID (local scheduled date), NOT startTimestamp (a UTC
+#    instant, which shifts evening games to the next day and drops the last day).
+GAME_IDS=$(YEAR="$YEAR" FMT="$FMT" uv run python -c '
 import os
+from datetime import date, timedelta
 
-# Get environment variable safely
-base_dir = os.environ.get("AUDL_SOURCE_DIR", "")
-game_path = os.path.join(base_dir, "games/season=2026/games.json")
+from pipeline_utils import data_suffix, game_date, read_table, source_dir
 
-# Load and filter
-df = pd.read_json(game_path)
-df["startTimestamp"] = pd.to_datetime(df["startTimestamp"], utc=True)
+year = int(os.environ["YEAR"])
+fmt = os.environ["FMT"]
 
-today = pd.Timestamp.utcnow().normalize()
-start_date = today - pd.Timedelta(weeks=2)
-end_date = today - pd.Timedelta(days=1)
+today = date.today()
+start_date = (today - timedelta(days=14)).isoformat()
+end_date = (today - timedelta(days=1)).isoformat()
 
-date_mask = (df["startTimestamp"] >= start_date) & (df["startTimestamp"] <= end_date)
-dff = df[date_mask]
+games_file = source_dir() / "games" / f"season={year}" / f"games{data_suffix(fmt)}"
+games = read_table(games_file)
 
-# Print the gameIDs separated by a space so Bash can loop over them easily
-print(" ".join(dff["gameID"].astype(str).tolist()))
+selected = [g["gameID"] for g in games if start_date <= game_date(g["gameID"]) <= end_date]
+print(" ".join(selected))
 ')
 
 # 2. Check if we actually got any IDs back
@@ -35,7 +38,6 @@ N=8
 for game_id in $GAME_IDS; do
     ((i=i%N)); ((i++==0))
     echo "Processing gameID: $game_id"
-    # uv run audl-pipeline $game_id --source-dir $AUDL_SOURCE_DIR --processed-dir $AUDL_PROCESSED_DIR 
-    uv run audl-pipeline $game_id --source-dir $AUDL_SOURCE_DIR --processed-dir $AUDL_PROCESSED_DIR --format json
+    uv run audl-pipeline $game_id --source-dir $AUDL_SOURCE_DIR --processed-dir $AUDL_PROCESSED_DIR --format "$FMT"
 done
 

@@ -31,19 +31,22 @@ def _throw_type(sx, sy, ex, ey):
 
     Only the coordinate-derivable tactical class; mechanical type (hammer/scoober) and
     side (backhand/forehand) are not recoverable from endpoints, so they are omitted.
+
+    - huck: long downfield throw, UFA cutoff of ``HUCK_YARDS`` (40+) downfield yards.
+    - dump: short pass thrown backward (negative downfield yards), to reset the stall count.
+    - swing: lateral/cross-field pass where |ΔX| dominates ΔY, changing the angle of attack.
+    - pass: generic default -- forward, not long enough to huck, not primarily lateral/backward.
     """
     if None in (sx, sy, ex, ey):
         return None
     dx, dy = ex - sx, ey - sy
     if _is_huck(sy, ey):
         return "huck"
-    if dy <= 0:
+    if dy < 0:
         return "dump"
-    if abs(dx) >= 15 and dy < 10:
+    if abs(dx) > dy:
         return "swing"
-    if 0 < dy <= 20 and abs(dx) < 15:
-        return "under"
-    return "upline"
+    return "pass"
 
 
 def extract_throws_events(timeline, ctx):
