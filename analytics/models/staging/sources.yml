@@ -1,6 +1,13 @@
 version: 2
 sources:
-  - name: external
+  - name: raw
+    meta:
+      external_location: "read_json_auto('{{ env_var('AUDL_SOURCE_DIR') }}/{name}/*/*.json', hive_partitioning=true, union_by_name=true)"
+    tables:
+      - name: games
+      - name: players
+      - name: teams
+  - name: processed
     meta:
       external_location: "read_json_auto('{{ env_var('AUDL_PROCESSED_DIR') }}/{name}/**/*.json', hive_partitioning=true, union_by_name=true)"
     tables:

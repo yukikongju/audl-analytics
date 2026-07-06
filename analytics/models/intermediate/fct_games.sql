@@ -1,0 +1,31 @@
+{{ config(materialized='view') }}
+
+SELECT
+    ext_game_id,
+    month,
+    season,
+    {{ parse_game_date('ext_game_id') }} AS game_date,
+    id,
+    game_id,
+    start_on_offense,
+    completions_numer,
+    completions_denom,
+    hucks_numer,
+    hucks_denom,
+    blocks,
+    turnovers,
+    o_line_scores,
+    o_line_points,
+    o_line_possessions,
+    d_line_scores,
+    d_line_points,
+    d_line_possessions,
+    red_zone_scores,
+    red_zone_possessions,
+    is_home,
+    roster_ids,
+    score,
+    score_times,
+    team_season_id,
+    ext_team_id
+FROM {{ ref('stg_games') }}

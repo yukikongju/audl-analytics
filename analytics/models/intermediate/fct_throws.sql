@@ -1,0 +1,33 @@
+{{ config(materialized='view') }}
+
+SELECT
+    game_date,
+    ext_game_id,
+    season,
+    month,
+    point_id,
+    possession_id,
+    sequence_id,
+    offense_team_id,
+    defense_team_id,
+    ext_thrower_id,
+    ext_receiver_id,
+    ext_defender_id,
+    is_completion,
+    is_throwaway,
+    is_drop,
+    is_block,
+    is_interception,
+    is_assist,
+    is_hockey_assist,
+    is_huck,
+    is_stall,
+    is_callahan,
+    start_x,
+    start_y,
+    end_x,
+    end_y,
+    yards_thrown,
+    yards_received,
+    throw_type
+FROM {{ ref('stg_throws') }}
