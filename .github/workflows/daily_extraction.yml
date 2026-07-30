@@ -46,6 +46,6 @@ jobs:
       # 5. Run the script
       - name: Run the bash script
         run: |
-          chmod +x script.sh
+          chmod +x ./ingestion/scripts/daily_extraction.sh
           source .venv/bin/activate
           ./ingestion/scripts/daily_extraction.sh
