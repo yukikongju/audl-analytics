@@ -1,0 +1,51 @@
+on:
+  schedule:
+    # Runs at 00:00 UTC every day. 
+    # (Format: minute hour day month day-of-week)
+    - cron: '0 0 * * *'
+
+  # Allows you to trigger the run manually from the GitHub UI
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    if: vars.RUN_DAILY == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 1. Install uv
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      # 2. Set up Python (optional, but enforces a specific version for uv to use)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. Create venv and install dependencies via uv
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install pandas requests
+
+      # 4. Authenticate to Google Cloud (REQUIRED for gcloud storage cp)
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # 5. Run the script
+      - name: Run the bash script
+        run: |
+          chmod +x script.sh
+          source .venv/bin/activate
+          ./ingestion/scripts/daily_extraction.sh
