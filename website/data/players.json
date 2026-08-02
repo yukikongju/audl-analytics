@@ -1,0 +1,17 @@
+[
+  {"id":"alex-atkins","name":"Alex Atkins","team":"ny","aec":81.5,"taec":50.6,"raec":31.0,"g":23,"a":45,"c":453,"t":9,"b":13,"cp":97.8,"hu":8.6,"xcp":93.4,"gp":13},
+  {"id":"elliot-hawkins","name":"Elliot Hawkins","team":"ind","aec":77.8,"taec":41.5,"raec":36.3,"g":23,"a":69,"c":319,"t":29,"b":5,"cp":92.7,"hu":14.7,"xcp":89.4,"gp":13},
+  {"id":"kyle-henke","name":"Kyle Henke","team":"atx","aec":71.3,"taec":41.5,"raec":29.8,"g":22,"a":51,"c":503,"t":19,"b":5,"cp":96.5,"hu":5.5,"xcp":93.9,"gp":12},
+  {"id":"tobe-decraene","name":"Tobe Decraene","team":"bos","aec":71.0,"taec":31.0,"raec":40.0,"g":36,"a":60,"c":487,"t":30,"b":6,"cp":95.3,"hu":2.5,"xcp":94.4,"gp":12},
+  {"id":"chad-yorgason","name":"Chad Yorgason","team":"sea","aec":70.3,"taec":37.2,"raec":33.0,"g":25,"a":51,"c":298,"t":26,"b":6,"cp":93.4,"hu":13.4,"xcp":90.6,"gp":13},
+  {"id":"ben-jagt","name":"Ben Jagt","team":"ny","aec":68.2,"taec":25.8,"raec":42.4,"g":39,"a":28,"c":210,"t":12,"b":9,"cp":94.1,"hu":4.2,"xcp":91.8,"gp":13},
+  {"id":"matt-labar","name":"Matt LaBar","team":"ny","aec":67.1,"taec":45.8,"raec":21.3,"g":25,"a":30,"c":401,"t":17,"b":6,"cp":96.4,"hu":5.5,"xcp":93.5,"gp":13},
+  {"id":"garrett-martin","name":"Garrett Martin","team":"slc","aec":66.2,"taec":18.8,"raec":47.4,"g":44,"a":28,"c":250,"t":16,"b":5,"cp":94.0,"hu":6.7,"xcp":93.0,"gp":12},
+  {"id":"spencer-lofink","name":"Spencer Lofink","team":"sea","aec":63.8,"taec":38.4,"raec":25.4,"g":28,"a":42,"c":356,"t":14,"b":8,"cp":95.2,"hu":9.1,"xcp":92.1,"gp":13},
+  {"id":"jake-henderson","name":"Jake Henderson","team":"sea","aec":61.5,"taec":40.2,"raec":21.3,"g":18,"a":38,"c":380,"t":20,"b":4,"cp":94.8,"hu":11.3,"xcp":91.5,"gp":13},
+  {"id":"rowan-mcdonnell","name":"Rowan McDonnell","team":"dc","aec":62.8,"taec":42.0,"raec":20.8,"g":16,"a":48,"c":425,"t":22,"b":3,"cp":95.8,"hu":6.8,"xcp":93.2,"gp":13},
+  {"id":"jack-williams","name":"Jack Williams","team":"min","aec":59.6,"taec":35.2,"raec":24.4,"g":22,"a":35,"c":310,"t":15,"b":7,"cp":94.5,"hu":8.0,"xcp":91.0,"gp":12},
+  {"id":"drew-swanson","name":"Drew Swanson","team":"slc","aec":58.4,"taec":22.1,"raec":36.3,"g":32,"a":19,"c":180,"t":10,"b":12,"cp":92.8,"hu":3.8,"xcp":90.2,"gp":12},
+  {"id":"antoine-davis","name":"Antoine Davis","team":"car","aec":57.1,"taec":30.5,"raec":26.6,"g":28,"a":32,"c":280,"t":19,"b":8,"cp":93.2,"hu":10.5,"xcp":89.8,"gp":13},
+  {"id":"kevin-quinlan","name":"Kevin Quinlan","team":"mtl","aec":55.2,"taec":28.6,"raec":26.6,"g":20,"a":24,"c":220,"t":18,"b":5,"cp":91.5,"hu":7.4,"xcp":88.3,"gp":12}
+]

@@ -1,0 +1,155 @@
+/* ═══════════════════════════════════════════════════════════
+   components.css — shared UI: hero, tabs, cards, pills, controls,
+   stat bars, legend, tooltip, big-stat, and the shared stats table.
+   Deduped from inspiration/*.html.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── HERO (base + per-type modifiers) ─────────────────────── */
+.hero{position:relative;padding:44px 5vw 36px;border-bottom:1px solid var(--line);overflow:hidden;z-index:1;}
+.hero .ghost{
+  position:absolute;right:3vw;top:50%;transform:translateY(-50%);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:clamp(120px,18vw,300px);color:rgba(255,255,255,.03);
+  line-height:1;pointer-events:none;z-index:0;text-transform:uppercase;letter-spacing:.02em;
+}
+.hero-inner{display:flex;gap:32px;align-items:flex-start;position:relative;z-index:1;}
+.hero-info{flex:1;}
+.hero-info .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--orange);text-transform:uppercase;margin-bottom:6px;}
+.hero-info .city{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:2px;}
+.hero-info h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:clamp(38px,7vw,80px);text-transform:uppercase;letter-spacing:.02em;line-height:.92;}
+.hero-info h1 .num{color:var(--dim);font-weight:400;font-size:.55em;margin-left:12px;}
+
+/* player avatar / team logo */
+.hero .avatar{width:130px;height:160px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+.hero .team-logo{width:100px;height:100px;border-radius:50%;background:var(--panel-2);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hero .avatar svg,.hero .team-logo svg{opacity:.22;}
+
+.hero .team-line{display:flex;align-items:center;gap:10px;margin-top:10px;font-family:'Barlow Condensed',sans-serif;font-size:17px;letter-spacing:.04em;text-transform:uppercase;color:var(--dim);}
+.hero .team-line .tn{color:var(--text);font-weight:700;}
+.hero .team-line .sep{opacity:.3;}
+.hero .bio{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);}
+.hero .bio span{background:var(--panel-2);border:1px solid var(--line);padding:3px 8px;border-radius:3px;}
+.hero .accolades{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.hero .accolades .acc{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text);background:var(--panel);border:1px solid var(--line);padding:4px 10px;border-radius:20px;}
+
+.hero .team-meta{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap;}
+.hero .record{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;background:var(--panel);border:1px solid var(--line);padding:5px 12px;border-radius:4px;color:var(--lime);}
+.hero .team-stat{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);}
+.hero .team-stat b{color:var(--text);}
+.hero .team-meta .sep{color:var(--line);}
+.hero .social{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);border:1px solid var(--line);padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;}
+
+/* simple page hero (leaderboard/about) */
+.hero.simple{background:linear-gradient(135deg,rgba(18,24,33,1) 0%,rgba(30,50,70,.5) 100%);}
+.hero.simple .bar{width:48px;height:4px;background:var(--blue);border-radius:2px;margin-top:14px;}
+
+/* ─── CONTROLS / FILTERS ───────────────────────────────────── */
+.controls{display:flex;align-items:center;gap:20px;padding:20px 5vw;border-bottom:1px solid var(--line);flex-wrap:wrap;position:relative;z-index:1;}
+.ctrl-group{display:flex;flex-direction:column;gap:4px;}
+.ctrl-group label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);}
+.ctrl-group select,.ctrl-group input{background:var(--panel);color:var(--text);border:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 12px;border-radius:4px;min-width:120px;cursor:pointer;}
+.ctrl-group input{min-width:200px;}
+.ctrl-group input::placeholder{color:var(--dim);}
+.spacer,.f-spacer{flex:1;}
+
+/* ─── TABS ─────────────────────────────────────────────────── */
+.tabs{display:flex;justify-content:center;padding:0 5vw;border-bottom:1px solid var(--line);background:rgba(10,14,20,.6);position:relative;z-index:1;}
+.tab{
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--dim);background:none;border:none;cursor:pointer;
+  padding:18px 22px 14px;position:relative;display:flex;align-items:center;gap:8px;
+  transition:color .2s;white-space:nowrap;text-decoration:none;
+}
+.tab .idx{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);transition:color .2s;}
+.tab::after{content:'';position:absolute;left:22px;right:22px;bottom:0;height:2px;background:var(--orange);transform:scaleX(0);transform-origin:left;transition:transform .25s ease;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--text);}
+.tab.active .idx{color:var(--orange);}
+.tab.active::after{transform:scaleX(1);}
+
+/* ─── CARD ─────────────────────────────────────────────────── */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:22px;margin-bottom:24px;}
+.card h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:14px;}
+.card .tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);border:1px solid var(--line);padding:3px 8px;border-radius:20px;display:inline-block;}
+.card .note{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-top:14px;line-height:1.5;}
+.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+
+/* content grid helper */
+.content{display:grid;gap:24px;padding:30px 5vw 50px;align-items:start;position:relative;z-index:1;}
+@media(max-width:900px){.content{grid-template-columns:1fr !important;}}
+
+/* ─── PILLS ────────────────────────────────────────────────── */
+.pills{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.pill{font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;border:1px solid var(--line);color:var(--dim);padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .2s;letter-spacing:.04em;display:flex;align-items:center;gap:6px;}
+.pill:hover{border-color:var(--dim);color:var(--text);}
+.pill.active{border-color:var(--text);color:var(--text);background:var(--panel-2);}
+.pill .d{width:7px;height:7px;border-radius:50%;opacity:.5;}
+.pill.active .d{opacity:1;}
+
+/* ─── STAT BARS (percentile / breakdown) ───────────────────── */
+.pct-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:12px;}
+.pct-row .label{width:55px;text-align:right;color:var(--dim);font-size:11px;}
+.pct-row .bar-track{flex:1;height:6px;background:var(--panel-2);border-radius:3px;position:relative;}
+.pct-row .bar-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+.pct-row .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.pct-row .val{width:28px;font-weight:700;font-size:12px;}
+
+/* ─── LEGEND ───────────────────────────────────────────────── */
+.legend{margin-top:14px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.legend .gi{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace;}
+.legend .gd{width:10px;height:10px;border-radius:50%;display:inline-block;}
+
+/* ─── TOOLTIP ──────────────────────────────────────────────── */
+.tip{position:absolute;width:200px;z-index:100;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,.7);display:none;font-size:12px;}
+.tip.on{display:block;}
+.tip .tl{font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:13px;letter-spacing:.02em;}
+.tip .ts{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:6px;}
+.tip .tv{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;}
+.tip .tv .row{display:flex;justify-content:space-between;}
+.tip .tv .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle;}
+
+/* ─── BIG SUMMARY STAT ─────────────────────────────────────── */
+.big-stat{text-align:center;padding:18px 0 8px;border-bottom:1px solid var(--line);margin-bottom:16px;}
+.big-stat .num{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:700;line-height:1;}
+.big-stat .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-top:4px;}
+
+/* player Stats tab: three-panel breakdown */
+.stats-panels{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:0;}
+.stats-panels > div{padding:0 24px;border-right:1px solid var(--line);}
+.stats-panels > div:last-child{border-right:none;}
+.stats-panels h3{text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:20px;}
+.stats-panels h4{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.04em;text-align:center;margin:18px 0 10px;color:var(--text);}
+.rose-wrap{display:flex;justify-content:center;}
+@media(max-width:1000px){.stats-panels{grid-template-columns:1fr;}.stats-panels > div{border-right:none;border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:20px;}}
+
+/* ═══ SHARED STATS TABLE (leaderboard + profile Stats tabs) ═══ */
+.table-wrap{margin:0 5vw 50px;background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden;position:relative;z-index:1;}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px;}
+.table-header h3{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;text-transform:uppercase;letter-spacing:.04em;}
+.table-header .right{display:flex;align-items:center;gap:12px;}
+.table-scroll{overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--line) var(--panel);}
+.stats-table{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap;}
+.stats-table thead th{position:sticky;top:0;background:var(--panel-2);z-index:2;}
+.stats-table th{text-align:left;font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;transition:color .15s;user-select:none;}
+.stats-table th:hover{color:var(--text);}
+.stats-table th.sorted{color:var(--orange);}
+.stats-table th.group{text-align:center;color:var(--dim);font-size:8px;letter-spacing:.1em;border-bottom:1px solid var(--line);padding:4px 8px;background:var(--panel);cursor:default;}
+.stats-table th.divide,.stats-table td.divide{border-left:1px solid var(--line);}
+.stats-table td{padding:8px;border-bottom:1px solid rgba(37,48,60,.5);font-size:11px;color:var(--text);}
+.stats-table tr:hover td{background:rgba(255,255,255,.02);}
+.stats-table td.rk{color:var(--dim);font-weight:700;text-align:center;width:32px;}
+.stats-table td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.stats-table td.entity{font-weight:700;font-size:12px;}
+.stats-table td.entity a{color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px;}
+.stats-table td.entity a:hover{color:var(--orange);}
+.stats-table td.entity .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.stats-table td .pct{display:block;font-size:9px;margin-top:1px;}
+.stats-table td .pct.hi{color:var(--lime);}
+.stats-table td .pct.mid{color:var(--orange);}
+.stats-table td .pct.lo{color:var(--red);}
+.stats-table td.pos{color:var(--lime);}
+.stats-table td.neg{color:var(--red);}
+/* sticky columns: set left offset inline via --l */
+.stats-table .sticky{position:sticky;left:var(--l,0);z-index:1;background:var(--panel);}
+.stats-table tr:hover .sticky{background:rgba(18,24,33,.98);}
+.stats-table thead .sticky{background:var(--panel-2);z-index:3;}

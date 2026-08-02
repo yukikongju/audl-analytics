@@ -1,0 +1,53 @@
+/* ═══════════════════════════════════════════════════════════
+   base.css — single source of truth for design tokens + reset
+   Deduped from the inspiration/*.html mockups (their :root blocks
+   had drifted: --dim vs --text-dim, etc). One name per token.
+   ═══════════════════════════════════════════════════════════ */
+
+:root{
+  /* surfaces */
+  --bg:#0A0E14;
+  --panel:#121821;
+  --panel-2:#1A222D;
+  --line:#25303C;
+  /* text */
+  --text:#E7EDF3;
+  --dim:#8592A0;
+  /* accents */
+  --orange:#FF6A2B;
+  --lime:#C6FF3D;
+  --blue:#3FA7FF;
+  --red:#FF4D6A;
+  --purple:#B98CFF;
+  --teal:#2DD4BF;
+  /* contextual (game sides / team) */
+  --home:#4A7FB5;
+  --away:#E8A838;
+  --team:#D4622B;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+::selection{background:var(--orange);color:#0A0E14;}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+/* fixed background texture used across all pages */
+.bg-tex{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:repeating-linear-gradient(180deg,
+    rgba(255,255,255,.012) 0px,rgba(255,255,255,.012) 1px,
+    transparent 1px,transparent 64px);
+}
+
+/* the app view sits above the texture */
+#view{position:relative;z-index:1;}

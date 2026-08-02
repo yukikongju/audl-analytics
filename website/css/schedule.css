@@ -1,0 +1,80 @@
+/* ═══════════════════════════════════════════════════════════
+   schedule.css — page-specific styles for the Schedule page.
+   Ported from inspiration/schedule.html. Uses base.css tokens.
+   Kept separate from components.css since these are not shared chrome.
+   ═══════════════════════════════════════════════════════════ */
+
+/* HERO variant with playoff strip */
+.sched-hero{position:relative;padding:40px 5vw 32px;border-bottom:1px solid var(--line);overflow:hidden;z-index:1;background:linear-gradient(135deg,rgba(18,24,33,1) 0%,rgba(30,50,70,.6) 50%,rgba(18,24,33,1) 100%);}
+.sched-hero .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-bottom:6px;}
+.sched-hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:clamp(48px,9vw,96px);text-transform:uppercase;letter-spacing:.02em;line-height:.92;}
+.sched-hero .accent-bar{width:48px;height:4px;background:var(--blue);border-radius:2px;margin-top:14px;}
+
+/* PLAYOFF STRIP */
+.playoff{display:flex;gap:0;margin-top:28px;overflow-x:auto;scrollbar-width:none;border:1px solid var(--line);border-radius:4px;background:var(--panel);}
+.playoff::-webkit-scrollbar{display:none;}
+.playoff-hd{display:flex;flex-direction:column;justify-content:center;padding:14px 20px;border-right:1px solid var(--line);flex-shrink:0;}
+.playoff-hd .title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:.02em;}
+.playoff-hd .title em{font-style:normal;color:var(--orange);}
+.playoff-hd .sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-top:4px;letter-spacing:.06em;text-transform:uppercase;}
+.po-game{padding:10px 18px;border-right:1px solid var(--line);flex-shrink:0;min-width:170px;}
+.po-game:last-child{border-right:none;}
+.po-game .po-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between;}
+.po-game .po-label .date{color:var(--orange);}
+.po-row{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:3px 0;}
+.po-row .seed{color:var(--dim);font-size:10px;width:12px;}
+.po-row .abr{font-weight:600;}
+.po-row .sc{margin-left:auto;font-weight:700;color:var(--dim);}
+
+/* FILTER CARD */
+.filter-card{margin:24px 5vw 0;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:18px 20px;position:relative;z-index:1;}
+.filter-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.filter-top h2{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;}
+.filter-top select{background:var(--panel-2);color:var(--text);border:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px 10px;border-radius:4px;cursor:pointer;}
+.filter-top .spacer{flex:1;}
+.filter-top .team-select{min-width:160px;}
+
+/* WEEK PILLS */
+.week-strip{display:flex;gap:0;margin-top:14px;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--line);padding-top:14px;}
+.week-strip::-webkit-scrollbar{display:none;}
+.wpill{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.02em;color:var(--dim);background:none;border:none;cursor:pointer;padding:8px 16px 10px;position:relative;text-align:center;white-space:nowrap;flex-shrink:0;transition:color .2s;}
+.wpill .wnum{display:block;font-size:14px;font-weight:700;}
+.wpill .wdates{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);margin-top:1px;letter-spacing:.02em;}
+.wpill::after{content:'';position:absolute;left:8px;right:8px;bottom:0;height:2px;background:var(--orange);transform:scaleX(0);transition:transform .2s;}
+.wpill:hover{color:var(--text);}
+.wpill.active{color:var(--text);}
+.wpill.active::after{transform:scaleX(1);}
+.wpill.active .wdates{color:var(--text);}
+.wpill .dot{width:5px;height:5px;border-radius:50%;background:var(--orange);margin:4px auto 0;display:none;}
+.wpill.current .dot{display:block;}
+
+/* TEAM HEADER */
+.team-header{display:none;margin:16px 5vw 0;background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:14px 20px;align-items:center;gap:14px;position:relative;z-index:1;}
+.team-header.show{display:flex;}
+.team-header .th-badge{width:44px;height:44px;border-radius:50%;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.team-header .th-info .label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);}
+.team-header .th-info .name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.02em;}
+
+/* GAME LIST */
+.game-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);padding:8px 5vw 0;letter-spacing:.04em;position:relative;z-index:1;}
+.game-list{padding:16px 5vw 50px;position:relative;z-index:1;}
+.day-header{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:20px 0 8px;border-bottom:1px dashed rgba(255,255,255,.06);margin-bottom:12px;}
+.gcard{background:var(--panel);border:1px solid var(--line);border-radius:4px;margin-bottom:12px;display:grid;grid-template-columns:1fr auto auto;align-items:center;overflow:hidden;text-decoration:none;color:inherit;transition:border-color .2s;}
+.gcard:hover{border-color:var(--dim);}
+.gcard .teams{padding:16px 20px;}
+.gcard .trow{display:flex;align-items:center;gap:10px;padding:4px 0;font-family:'Barlow Condensed',sans-serif;}
+.gcard .trow .bar{width:3px;height:28px;border-radius:2px;flex-shrink:0;}
+.gcard .trow .tname{font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.02em;min-width:100px;}
+.gcard .trow .rec{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-left:2px;}
+.gcard .trow .arrow{color:var(--dim);font-size:10px;margin-left:auto;opacity:0;}
+.gcard .trow.winner .arrow{opacity:1;color:var(--lime);}
+.gcard .trow .gscore{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;min-width:36px;text-align:right;}
+.gcard .trow.winner .gscore{color:var(--text);}
+.gcard .trow.loser .gscore{color:var(--dim);}
+.gcard .gmeta{padding:16px;text-align:center;border-left:1px solid var(--line);min-width:90px;}
+.gcard .gmeta .badge{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--lime);border:1px solid rgba(198,255,61,.2);padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:6px;}
+.gcard .gmeta .gdate{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);font-weight:600;}
+.gcard .gmeta .gtime{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);}
+.gcard .gcta{padding:16px 20px;border-left:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--orange);white-space:nowrap;}
+.no-games{text-align:center;padding:40px 0;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);}
+@media(max-width:700px){.gcard{grid-template-columns:1fr auto}.gcard .gcta{display:none}}

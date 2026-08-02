@@ -1,0 +1,69 @@
+/* ═══════════════════════════════════════════════════════════
+   nav.css — top nav + score ticker
+   Unified from the mockups' .nav / .topnav variants → .nav
+   ═══════════════════════════════════════════════════════════ */
+
+/* NAV */
+.nav{
+  position:sticky;top:0;z-index:60;
+  background:rgba(10,14,20,.95);backdrop-filter:blur(10px);
+  padding:0 5vw;display:flex;align-items:center;justify-content:space-between;
+  height:52px;border-bottom:1px solid var(--line);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);}
+.nav-logo .wm{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;
+  text-transform:uppercase;letter-spacing:.06em;line-height:1.1;
+}
+.nav-logo .wm em{font-style:normal;color:var(--orange);}
+
+.nav-links{display:flex;align-items:center;gap:2px;}
+.nav-link{
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--dim);background:none;border:none;cursor:pointer;
+  padding:16px 18px 12px;position:relative;
+  display:flex;align-items:center;gap:5px;
+  transition:color .2s;white-space:nowrap;text-decoration:none;
+}
+.nav-link::after{
+  content:'';position:absolute;left:18px;right:18px;bottom:0;height:2px;
+  background:var(--orange);transform:scaleX(0);transform-origin:left;
+  transition:transform .25s ease;
+}
+.nav-link:hover{color:var(--text);}
+.nav-link:hover::after{transform:scaleX(1);}
+.nav-link.active{color:var(--text);}
+.nav-link.active::after{transform:scaleX(1);}
+.nav-link svg{opacity:.35;transition:opacity .2s;}
+.nav-link:hover svg{opacity:.6;}
+
+.nav-burger{
+  background:none;border:1px solid var(--line);border-radius:4px;
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;margin-left:10px;transition:border-color .2s;
+}
+.nav-burger:hover{border-color:var(--dim);}
+
+/* TICKER */
+.ticker{
+  display:flex;gap:10px;padding:12px 5vw;border-bottom:1px solid var(--line);
+  overflow-x:auto;scrollbar-width:none;position:relative;z-index:1;
+}
+.ticker::-webkit-scrollbar{display:none;}
+.ticker .game{
+  flex-shrink:0;background:var(--panel);border:1px solid var(--line);border-radius:4px;
+  padding:8px 14px;min-width:140px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;align-items:center;
+  text-decoration:none;color:inherit;transition:border-color .2s;
+}
+.ticker .game:hover{border-color:var(--dim);}
+.ticker .game .team{color:var(--dim);font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
+.ticker .game .score{text-align:right;font-weight:700;font-size:14px;}
+.ticker .game .score.win{color:var(--lime);}
+.ticker .game .badge{
+  grid-column:1/-1;display:flex;justify-content:center;gap:6px;font-size:9px;
+  color:var(--dim);letter-spacing:.08em;text-transform:uppercase;
+  padding-top:4px;border-top:1px solid var(--line);margin-top:4px;
+}
+.ticker .game .badge b{color:var(--orange);}
