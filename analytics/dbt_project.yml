@@ -38,3 +38,5 @@ models:
       +materialized: incremental
     intermediate:
       +materialized: view
+    marts:
+      +materialized: incremental

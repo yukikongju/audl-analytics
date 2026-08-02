@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: mart_player_game_stats
+    description: >
+      Comprehensive individual box score: one row per player, per team, per game.
+      Point/second counts come from fct_point_lineups (game-accurate team assignment);
+      offensive/defensive/pull metrics from fct_throws and fct_pulls.
+    columns:
+      - name: ext_game_id
+        description: External AUDL game id.
+        data_tests: [not_null]
+      - name: team_id
+        description: AUDL team id the player played for in this game.
+        data_tests: [not_null]
+      - name: ext_player_id
+        description: External AUDL player (roster) id.
+        data_tests: [not_null]
+
+  - name: mart_player_game_throws
+    description: >
+      Thrower -> receiver connection distribution: one row per
+      (season, game, thrower, receiver) with per-throw-type completed/attempted counts.
+      Only throws with a known receiver are included.
+    columns:
+      - name: ext_game_id
+        data_tests: [not_null]
+      - name: ext_thrower_id
+        data_tests: [not_null]
+      - name: ext_receiver_id
+        data_tests: [not_null]
+
+  - name: mart_team_game_stats
+    description: >
+      Team-level box score and efficiency: one row per team, per game (two rows per game).
+      Counting stats rolled up from mart_player_game_stats; possession/red-zone metrics and
+      conversion rates sourced from the authoritative fct_games columns.
+    columns:
+      - name: ext_game_id
+        data_tests: [not_null]
+      - name: team_id
+        data_tests: [not_null]
+      - name: opponent_team_id
+        data_tests: [not_null]
