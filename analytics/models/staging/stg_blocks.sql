@@ -16,7 +16,6 @@ SELECT
     point_id,
     defender_id         AS ext_defender_id,
     is_callahan,
-    defense_team_id,
     defense_ext_team_id AS ext_defense_team_id
 FROM source_data
 
