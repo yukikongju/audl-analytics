@@ -2,14 +2,14 @@ version: 2
 sources:
   - name: raw
     meta:
-      external_location: "read_json_auto('{{ env_var('AUDL_SOURCE_DIR') }}/{name}/*/*.json', hive_partitioning=true, union_by_name=true)"
+      external_location: "read_json_auto('{{ env_var('AUDL_EXTRACTION_DIR') }}/{name}/*/*.json', hive_partitioning=true, union_by_name=true)" # ex: path/games/season=2026/games.json
     tables:
       - name: games
       - name: players
       - name: teams
   - name: processed
     meta:
-      external_location: "read_json_auto('{{ env_var('AUDL_PROCESSED_DIR') }}/{name}/**/*.json', hive_partitioning=true, union_by_name=true)"
+      external_location: "read_json_auto('{{ env_var('AUDL_PROCESSED_DIR') }}/{name}/**/*.json', hive_partitioning=true, union_by_name=true)" # ex: path/ext_games/year=2026/month=05/2026-05-10-MTL-PIT.json
     tables:
       - name: ext_blocks
       - name: ext_games

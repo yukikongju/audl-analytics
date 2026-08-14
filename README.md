@@ -6,16 +6,25 @@ explore AUDL analytics on their own
 
 ## Setup
 
-**Step 1: Creating `.env`**
+**Step 1: Defining the environment variables**
 
-Define where downloaded files and duckdb tables will reside
+We will create `.env` and `.envrc` files to define where downloaded files and duckdb tables will reside
 
 ```
-AUDL_SOURCE_DIR=$HOME/Data/AUDLStats
-AUDL_PROCESSED_DIR=$HOME/Data/AUDLStatsProcessed
-AUDL_ANALYTICS_DIR=$HOME/Data/AUDL-Analytics
+# .env
+AUDL_EXTRACTION_DIR="${HOME}/.Data/ufa/extraction/"     # where raw data gets stored
+AUDL_PROCESSED_DIR="${HOME}/.Data/ufa/processed/"       # where raw data gets transformed into 5 tables
+AUDL_ANALYTICS_DIR="${HOME}/.Data/ufa/analytics/"       # where duckdb files will live
 ```
 
+```
+# .envrc
+dotenv .env
+```
+
+To load your variables everytime you go into this repo:
+1. In your `~/.zshrc`, add this line `eval "$(direnv hook zsh)"`
+2. In `audl-analytics`, run `direnv allow`. This will automatically load the environment variables you have defined in `.envrc`.
 
 ## Entity-Relationship Diagram
 
@@ -24,19 +33,9 @@ using [drawio](https://www.drawio.com/)
 
 ## Technologies Used
 
-Databases:
-- Relational Database (PostgreSQL, DuckDB) => Player, Team and Game Stats
-- Document-Oriented Database (MongoDB) => to store game events JSON
-- Graph Databases (Neo4j) => to keep track of player passes 
-
-DevOps Tools:
-- Docker
-
-Data Orchestration:
-- Airflow
-
-DE Tools:
-- dbt
-- pyspark
-
+* Ingestion: `Python`
+* Transformation: `dbt`, `duckdb`
+* Orchestration: `crontab -e`
+* API: `FastAPI`
+* Website: `javascript`, `html`, `css`, `ngrok`, `cloudflare`
 

@@ -10,11 +10,11 @@ log_success() { echo -e "\033[1;32m[DONE]\033[0m $(date '+%H:%M:%S') | $1"; }
 log_header() { echo -e "\n\033[1;35m==== $1 ====\033[0m\n"; }
 
 ### ==== Define Variables ====
-FIRST_ANALYTICS_SEASON=2020
-EXTRACTION_DIR="${HOME}/.Data/ufa/extraction/" # stores raw json files
-PROCESSED_DIR="${HOME}/.Data/ufa/processed/"   # process raw json files into ext_
-ANALYTICS_DIR="${HOME}/.Data/ufa/analytics/"   # store duckdb
-BASE_DIR="${HOME}/temp"                        # directory with audl-analytics repo
+FIRST_ANALYTICS_SEASON=2021
+EXTRACTION_DIR="${AUDL_EXTRACTION_DIR}" # stores raw json files
+PROCESSED_DIR="${AUDL_PROCESSED_DIR}"   # process raw json files into ext_
+ANALYTICS_DIR="${AUDL_ANALYTICS_DIR}"   # store duckdb
+# BASE_DIR="${HOME}/temp"                        # directory with audl-analytics repo
 CURRENT_YEAR=$(date +%Y)
 PROCESSESSING_FORMAT="json"
 
