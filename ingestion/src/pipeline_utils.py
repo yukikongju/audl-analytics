@@ -159,22 +159,43 @@ def read_table(path):
 
 
 # --- SOURCE_DIR loaders (read raw extracted data from the data lake) ----------------------
+def is_wrapped(payload):
+    """True if ``payload`` is a raw UFA ``api/v1`` response envelope (``{object, data}``).
+
+    The ``extract_weekly`` job strips this envelope (``response["data"]``) before writing,
+    but the curl-based ``setup.sh`` saves the response verbatim, so files on disk may be
+    either shape. Exact key-set match avoids misfiring on payloads that merely contain a
+    ``data`` field (e.g. the ``stats-pages/game`` shape is ``{game, rostersHome, ...}``).
+    """
+    return isinstance(payload, dict) and payload.keys() == {"object", "data"}
+
+
+def unwrap(payload):
+    """Return the inner ``data`` if ``payload`` is an ``api/v1`` envelope, else as-is.
+
+    Idempotent: already-unwrapped payloads pass through untouched, so the loaders work
+    against both ``extract_weekly`` (python) and ``setup.sh`` (curl) source dirs.
+    """
+    return payload["data"] if is_wrapped(payload) else payload
+
+
 def load_source_game_stats(game_id, root=None, fmt="parquet"):
     """Load the extracted game-stats payload (the full ``stats-pages/game`` shape)."""
     root = Path(root) if root else source_dir()
     path = partition_dir(root, "game_stats", game_year(game_id), game_month(game_id)) / f"{game_id}{data_suffix(fmt)}"
-    return read_table(path)
+    return unwrap(read_table(path))
 
 
 def load_source_game_events(game_id, root=None, fmt="parquet"):
     """Load the extracted gameEvents payload.
 
-    Extraction saves ``response["data"]``, so this is already the inner dict
-    (``{homeEvents, awayEvents, ...}``) — callers use it directly, no ``["data"]``.
+    Returns the inner dict (``{homeEvents, awayEvents, ...}``) — callers use it directly,
+    no ``["data"]``. ``unwrap`` strips the ``api/v1`` envelope if a curl-extracted file
+    still carries it.
     """
     root = Path(root) if root else source_dir()
     path = partition_dir(root, "game_events", game_year(game_id), game_month(game_id)) / f"{game_id}{data_suffix(fmt)}"
-    return read_table(path)
+    return unwrap(read_table(path))
 
 
 def list_source_game_ids(root=None, fmt="parquet"):
