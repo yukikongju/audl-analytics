@@ -4,6 +4,7 @@ with lineups as (
     select
         season,
         ext_game_id,
+        game_date,
         point_id,
         team_id,
         line_type,
@@ -24,6 +25,7 @@ points as (
         team_id,
         ext_player_id,
         max(season) as season,
+        max(game_date) as game_date,
         sum(seconds_played) as seconds_played,
         count(distinct case when line_type = 'O-Line' then point_id end) as o_points_played,
         count(distinct case when line_type = 'D-Line' then point_id end) as d_points_played,
@@ -97,9 +99,11 @@ pulls as (
 
 select
     p.ext_game_id,
-    p.team_id,
-    p.ext_player_id,
+    p.game_date,
     p.season,
+    p.team_id,
+    dt.ext_team_id,
+    p.ext_player_id,
     coalesce(t.assists, 0) as assists,
     coalesce(c.goals, 0) as goals,
     coalesce(t.hockey_assists, 0) as hockey_assists,
@@ -131,6 +135,7 @@ select
     coalesce(t.swing_completed, 0) as swing_completed,
     coalesce(t.swing_attempted, 0) as swing_attempted
 from points p
+left join {{ ref('dim_teams') }} dt on dt.season = p.season and dt.team_season_id = p.team_id
 left join throws t on p.ext_game_id = t.ext_game_id and p.ext_player_id = t.ext_player_id
 left join catches c on p.ext_game_id = c.ext_game_id and p.ext_player_id = c.ext_player_id
 left join blocks b on p.ext_game_id = b.ext_game_id and p.ext_player_id = b.ext_player_id

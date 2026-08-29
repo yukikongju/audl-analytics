@@ -44,6 +44,7 @@ context as (
     select
         g.ext_game_id,
         g.season,
+        g.game_date,
         g.team_season_id as team_id,
         o.team_season_id as opponent_team_id,
         g.ext_team_id,
@@ -66,6 +67,8 @@ context as (
 
 select
     c.ext_game_id,
+    c.season,
+    c.game_date,
     c.team_id,
     c.opponent_team_id,
     c.ext_team_id,
