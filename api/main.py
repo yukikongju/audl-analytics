@@ -1,6 +1,6 @@
 import os
 import duckdb
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, Depends, Query, HTTPException
 from fastapi_pagination import Page, add_pagination, paginate
 #  from pydantic import BaseModel
@@ -141,6 +141,67 @@ def get_team_leaderboard(
         FROM mart_team_game_stats
         WHERE season = ?
         GROUP BY ext_team_id
+        ORDER BY 1;
     """
     return paginate(execute_query(db, query, [season]))
+
+@app.get("/api/v1/player-metadata", response_model=List[Dict[str, Any]])
+def get_player_throws(
+    season: Optional[str] = None, 
+    ext_player_id: Optional[str] = None, 
+    ext_team_id: Optional[str] = None, 
+    db: duckdb.DuckDBPyConnection = Depends(get_db)
+):
+    # 1. Start with your base query and required parameters
+    query = "SELECT * FROM dim_players"
+    params = []
+    
+    # 2. Append to the query and parameters if the optional value exists
+    # building: SELECT * FROM dim_players WHERE season = ? AND ext_player_id = ? AND ...
+    filters = {
+        "season": season,
+        "ext_player_id": ext_player_id,
+        "ext_team_id": ext_team_id
+    }
+    conditions = {k: v for k, v in filters.items() if v is not None} # only keep the condition that are not None
+    if conditions:
+        query += " WHERE " + " AND ".join(f"{col} = ?" for col in conditions)
+        params = list(conditions.values())
+
+    return execute_query(db, query, params)
+
+
+@app.get("/api/v1/team-metadata", response_model=List[Dict[str, Any]])
+def get_player_throws(
+    season: Optional[str] = None, 
+    ext_team_id: Optional[str] = None, 
+    db: duckdb.DuckDBPyConnection = Depends(get_db)
+):
+    # 1. Start with your base query and required parameters
+    query = "SELECT * FROM dim_teams"
+    params = []
+    
+    # 2. Append to the query and parameters if the optional value exists
+    # building: SELECT * FROM dim_players WHERE season = ? AND ext_player_id = ? AND ...
+    filters = {
+        "season": season,
+        "ext_team_id": ext_team_id
+    }
+    conditions = {k: v for k, v in filters.items() if v is not None} # only keep the condition that are not None
+    if conditions:
+        query += " WHERE " + " AND ".join(f"{col} = ?" for col in conditions)
+        params = list(conditions.values())
+
+    return execute_query(db, query, params)
+
+@app.get("/api/v1/schedule", response_model=List[Dict[str, Any]])
+def get_player_throws(
+    season: int,
+    db: duckdb.DuckDBPyConnection = Depends(get_db)
+):
+    # 1. Start with your base query and required parameters
+    query = "SELECT * FROM mart_schedule WHERE season = ?"
+    return execute_query(db, query, [season])
+
+
 
