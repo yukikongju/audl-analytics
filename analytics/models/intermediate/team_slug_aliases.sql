@@ -4,6 +4,7 @@
 -- in the rename season the games feed records the team under BOTH slugs with the
 -- SAME team_season_id. The slug present in stg_teams is the current one; the other
 -- is the old one.
+-- NOTE: DEPRECATED
 with game_team_seasons as (
     select distinct ext_team_id, team_season_id
     from {{ ref('stg_games') }}

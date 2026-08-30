@@ -7,6 +7,11 @@ sources:
       - name: games
       - name: players
       - name: teams
+      - name: game_stats
+        meta:
+          # game_stats is partitioned two levels deep (season=/month=/), so it needs
+          # a deeper glob than the source-level `{name}/*/*.json`.
+          external_location: "read_json_auto('{{ env_var('AUDL_EXTRACTION_DIR') }}/game_stats/*/*/*.json', hive_partitioning=true, union_by_name=true)"
   - name: processed
     meta:
       external_location: "read_json_auto('{{ env_var('AUDL_PROCESSED_DIR') }}/{name}/**/*.json', hive_partitioning=true, union_by_name=true)" # ex: path/ext_games/year=2026/month=05/2026-05-10-MTL-PIT.json

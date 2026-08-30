@@ -1,7 +1,6 @@
 {{ config(materialized='view') }}
 
 with teams as (
-    -- one row per team per season; ext_team_id here is the CURRENT franchise slug
     select
         season,
         ext_team_id,
@@ -15,13 +14,25 @@ with teams as (
 ),
 
 game_team_seasons as (
-    -- team_season_id + the AS-PLAYED slug (whatever the games feed used that season)
     select distinct
         season,
         ext_team_id,
         team_season_id
     from {{ ref('stg_games') }}
+), 
+
+team_color as (
+    select
+        left(ext_game_id, 4) as season,
+        abbrev,
+        max(team_primary_hex) as primary_hex,
+        max(team_secondary_hex) as secondary_hex,
+        max(city) as city,
+        max(team_name) as team_name,
+    from {{ ref('stg_team_game_metadata') }}
+    group by 1, 2
 )
+
 
 -- Resolve the as-played slug per team-season: prefer the current slug if the team
 -- played under it that season, otherwise fall back to the renamed (old) slug via
@@ -36,11 +47,18 @@ select
     end as ext_team_id,
     t.ext_division_id,
     t.division_name,
-    t.city,
-    t.name,
-    t.full_name,
-    t.abbrev
+    t.abbrev,
+    --  t.city,
+    --  t.name,
+    c.city, -- note: taking city and name from stg_team_game_metadata because stg_teams overrides with new team slug (when team is expansion team / has been renamed)
+    c.team_name as name, 
+    c.primary_hex,
+    c.secondary_hex,
+    --  t.full_name,
 from teams t
+left join team_color c 
+    on t.abbrev = c.abbrev
+        and t.season = c.season
 left join {{ ref('team_slug_aliases') }} a
     on t.ext_team_id = a.current_slug
 left join game_team_seasons cur

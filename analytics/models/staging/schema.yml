@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: stg_team_game_metadata
+    description: >
+      Team-level game metadata: one row per team, per game (two rows per game),
+      flattened from game.team_season_home / team_season_away in raw game_stats.
+      is_home=True is the team_season_home side.
+    columns:
+      - name: ext_game_id
+        description: External AUDL game id.
+        data_tests: [not_null]
+      - name: id
+        description: team_season_id for this team in this game.
+        data_tests: [not_null]
+      - name: team_id
+        description: AUDL team id (franchise), FK to the team.
+        data_tests: [not_null]
+      - name: is_home
+        description: True for the home (team_season_home) side, False for away.
+        data_tests: [not_null]
+      - name: team_ext_team_id
+        description: External AUDL team slug (as-played that season).
+
+  - name: stg_player_game_metadata
+    description: >
+      Player-level game roster metadata: one row per roster entry, per game,
+      flattened from rostersHome / rostersAway in raw game_stats. is_home=True is the
+      rostersHome side. team_season_id / ext_team_id are derived from the roster's side
+      (game.team_season_home/away) so they are populated for every game. player_id,
+      player_ext_player_id and player_ls_player_id come straight from the roster and are
+      null for 2025/2026 games, whose game_stats API response no longer includes them.
+    columns:
+      - name: ext_game_id
+        description: External AUDL game id.
+        data_tests: [not_null]
+      - name: id
+        description: Roster entry id (player-in-game); referenced by tsg event streams.
+        data_tests: [not_null]
+      - name: team_season_id
+        description: team_season_id of the player's team in this game (derived from side).
+        data_tests: [not_null]
+      - name: ext_team_id
+        description: External team slug of the player's team (derived from side).
+        data_tests: [not_null]
+      - name: is_home
+        description: True for the home (rostersHome) side, False for away.
+        data_tests: [not_null]
+      - name: player_first_name
+        description: Player first name.
+        data_tests: [not_null]
+      - name: player_last_name
+        description: Player last name.
+        data_tests: [not_null]
+      - name: player_ext_player_id
+        description: >
+          External AUDL player slug. Null for 2025/2026 games (the game_stats API no longer
+          returns it); recovered downstream in dim_players via a (season, ext_team_id, name)
+          name bridge.
