@@ -1,0 +1,13 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "API endpoints to fetch from duckdb database"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.5.4",
+    "fastapi>=0.141.1",
+    "fastapi-pagination>=0.15.16",
+    "pydantic>=2.13.4",
+    "uvicorn>=0.52.3",
+]
