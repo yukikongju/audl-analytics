@@ -13,3 +13,5 @@ ngrok http 8005
 Forwarding                    https://a1b2-34-56-78-90.ngrok.app -> http://localhost:8005
 ```
 
+Accessing Swagger UI: `$AUDL_API_URI/docs`
+

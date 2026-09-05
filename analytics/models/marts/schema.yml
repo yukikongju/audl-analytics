@@ -17,6 +17,10 @@ models:
         data_tests: [not_null]
       - name: ext_team_id
         description: External AUDL team slug (as-played that season), mapped from dim_teams.
+      - name: opponent_team_id
+        description: AUDL team id (team_season_id) of the opponent in this game.
+      - name: opponent_ext_team_id
+        description: External AUDL team slug (as-played that season) of the opponent, mapped from dim_teams.
       - name: ext_player_id
         description: External AUDL player (roster) id.
         data_tests: [not_null]

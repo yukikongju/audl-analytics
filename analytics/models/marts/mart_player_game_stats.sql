@@ -95,6 +95,19 @@ pulls as (
         avg(hangtime_seconds) as recorded_pulls_hangtime
     from {{ ref('fct_pulls') }}
     group by 1, 2
+),
+
+opponents as (
+    -- fct_games is one row per team; self-join to find each team's opponent in a game.
+    -- team_season_id is the numeric team key that matches fct_point_lineups.team_id.
+    select
+        g.ext_game_id,
+        g.team_season_id as team_id,
+        o.team_season_id as opponent_team_id
+    from {{ ref('fct_games') }} g
+    join {{ ref('fct_games') }} o
+        on g.ext_game_id = o.ext_game_id
+       and g.team_season_id <> o.team_season_id
 )
 
 select
@@ -102,7 +115,9 @@ select
     p.game_date,
     p.season,
     p.team_id,
+    opp.opponent_team_id,
     dt.ext_team_id,
+    odt.ext_team_id as opponent_ext_team_id,
     p.ext_player_id,
     coalesce(t.assists, 0) as assists,
     coalesce(c.goals, 0) as goals,
@@ -136,6 +151,8 @@ select
     coalesce(t.swing_attempted, 0) as swing_attempted
 from points p
 left join {{ ref('dim_teams') }} dt on dt.season = p.season and dt.team_season_id = p.team_id
+left join opponents opp on opp.ext_game_id = p.ext_game_id and opp.team_id = p.team_id
+left join {{ ref('dim_teams') }} odt on odt.season = p.season and odt.team_season_id = opp.opponent_team_id
 left join throws t on p.ext_game_id = t.ext_game_id and p.ext_player_id = t.ext_player_id
 left join catches c on p.ext_game_id = c.ext_game_id and p.ext_player_id = c.ext_player_id
 left join blocks b on p.ext_game_id = b.ext_game_id and p.ext_player_id = b.ext_player_id
