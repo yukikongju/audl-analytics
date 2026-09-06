@@ -3,6 +3,7 @@ members = [
     "ingestion",
     "analytics",
     "api",
+    "modelling",
 ]
 
 [dependency-groups]

@@ -16,6 +16,7 @@ AUDL_EXTRACTION_DIR="${HOME}/.Data/ufa/extraction/"     # where raw data gets st
 AUDL_PROCESSED_DIR="${HOME}/.Data/ufa/processed/"       # where raw data gets transformed into 5 tables
 AUDL_ANALYTICS_DIR="${HOME}/.Data/ufa/analytics/"       # where duckdb files will live
 AUDL_API_URI=""                                         # uri endpoint replacing http://localhost:8000 from ngrok
+AUDL_MODELS_DIR="${HOME}/.Data/ufa/models/"             # where models pickle will be stored
 ```
 
 ```
