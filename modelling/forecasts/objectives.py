@@ -1,3 +1,12 @@
+"""Optuna hyperparameter-search objectives for the forecasting models.
+
+Defines one objective function per model (`lgbm`, `xgb`, `random_forest`),
+registered in `OBJECTIVE_REGISTRY`. Each objective evaluates a candidate
+parameter set via `cross_val_score` over a `StandardScaler`-wrapped
+`MultiOutputRegressor` and returns the mean loss to minimize. `run_bayesian`
+drives the TPE sampler over a chosen objective for a given number of trials.
+"""
+
 import lightgbm as lgbm
 import optuna
 import pandas as pd
@@ -6,7 +15,8 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection._split import BaseCrossValidator
-
+from sklearn.preprocessing import StandardScaler
+from sklearn.compose import TransformedTargetRegressor
 
 
 from typing import Dict, Callable
@@ -14,13 +24,8 @@ from utils import registry
 
 OBJECTIVE_REGISTRY: Dict[str, Callable] = {}
 
-
-#  from typing import Literal
-#  from pydantic import BaseModel, ValidationError
-
-#  class UserSelection(BaseModel):
-    #  # The variable must be exactly one of these three options
-    #  status: Literal["active", "inactive", "pending"]
+# TODO replace MultiOutputRegressor with RegressorChain
+# TODO add monotonic constraints, interaction constraints
 
 
 
@@ -44,15 +49,21 @@ def lgbm_objective(trial, X: pd.DataFrame, y: pd.DataFrame, cv: BaseCrossValidat
     }
     base_model = lgbm.LGBMRegressor(**params)
     multi_model = MultiOutputRegressor(base_model)
+    scaled_model = TransformedTargetRegressor(
+        regressor=multi_model,
+        transformer=StandardScaler()
+    )
+
     scores = cross_val_score(
-        multi_model, 
+        #  multi_model, 
+        scaled_model, 
         X, 
         y, 
         cv=cv, 
         scoring=scoring, 
         n_jobs=-1
     )
-    return scores.mean()
+    return -scores.mean()
 
 @registry(OBJECTIVE_REGISTRY, "xgb")
 def xgb_objective(trial, X: pd.DataFrame, y: pd.DataFrame, cv: BaseCrossValidator, scoring: str):
@@ -75,15 +86,20 @@ def xgb_objective(trial, X: pd.DataFrame, y: pd.DataFrame, cv: BaseCrossValidato
     }
     base_model = xgb.XGBRegressor(**params)
     multi_model = MultiOutputRegressor(base_model)
+    scaled_model = TransformedTargetRegressor(
+        regressor=multi_model,
+        transformer=StandardScaler()
+    )
     scores = cross_val_score(
-        multi_model, 
+        #  multi_model, 
+        scaled_model, 
         X, 
         y, 
         cv=cv, 
         scoring=scoring, 
         n_jobs=-1
     )
-    return scores.mean()
+    return -scores.mean()
 
 
 @registry(OBJECTIVE_REGISTRY, "random_forest")
@@ -99,21 +115,26 @@ def rf_objective(trial, X: pd.DataFrame, y: pd.DataFrame, cv: BaseCrossValidator
         "random_state":      42,
     }
     base_model = RandomForestRegressor(**params)
-    multi_model = MultiOutputRegressor(base_model) # FIXME rfr accepts multi-output regressor
+    #  multi_model = MultiOutputRegressor(base_model) # FIXME rfr accepts multi-output regressor
+    scaled_model = TransformedTargetRegressor(
+        regressor=multi_model,
+        transformer=StandardScaler()
+    )
     scores = cross_val_score(
-        multi_model, 
+        #  base_model, 
+        scaled_model, 
         X, 
         y, 
         cv=cv, 
         scoring=scoring, 
         n_jobs=-1
     )
-    return scores.mean()
+    return -scores.mean()
 
 
 def run_bayesian(objective, name, X, y, cv, scoring, n_trials=100):
     study = optuna.create_study(
-        direction="maximize",
+        direction="minimize", # maximize
         study_name=name,
         sampler=optuna.samplers.TPESampler(seed=42)
     )

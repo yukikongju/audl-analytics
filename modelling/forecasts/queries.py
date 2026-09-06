@@ -1,3 +1,11 @@
+"""SQL dataset queries for the forecasting pipeline.
+
+Holds the feature-engineering SQL registered in `QUERY_REGISTRY`. The
+`player_game_stats` query reads `mart_player_game_stats` and, per player, builds
+game-1/2/3 lag features and 5-game rolling averages for every metric alongside
+the current-game actuals.
+"""
+
 from typing import Dict
 
 player_game_stats_dataset_query = r"""
