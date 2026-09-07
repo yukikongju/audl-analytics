@@ -10,7 +10,7 @@ All run configuration is supplied via required CLI arguments (no defaults).
 
 Current invocation:
 
-    uv run main.py \\
+    uv run train.py \\
         --model_type xgb \\
         --db_path "$AUDL_ANALYTICS_DIR/dev.duckdb" \\
         --models_dir "$AUDL_MODELS_DIR" \\
@@ -20,9 +20,10 @@ Current invocation:
         --train_size 0.8 \\
         --n_splits 5 \\
         --n_trials 5
-"""
 
-from os.path import isfile
+uv run train.py --model_type xgb --db_path "$AUDL_ANALYTICS_DIR/dev.duckdb" --models_dir "$AUDL_MODELS_DIR" --query_name player_game_stats --feature_type lag --scoring_type neg_root_mean_squared_error --train_size 0.8 --n_splits 5 --n_trials 5
+
+"""
 
 import argparse
 import duckdb
@@ -41,6 +42,7 @@ from sklearn.model_selection import KFold
 from objectives import OBJECTIVE_REGISTRY, run_bayesian
 from queries import QUERY_REGISTRY
 from schemas import Scoring, ModelFeatures
+from utils import duckdb_query
 
 
 ### 0. Config Parser
@@ -138,13 +140,8 @@ if not os.path.isfile(db_path) or not db_path.endswith(".duckdb"):
 
 ### 1. Load Data
 con = duckdb.connect(db_path, read_only=True)
-try:
-    df = con.execute(QUERY_REGISTRY[query_name]).df()
-except Exception as e:
-    raise RuntimeError(f"query '{query_name}' failed: {e}") from e
-finally:
-    con.close()
-
+df = duckdb_query(con, QUERY_REGISTRY[query_name])
+con.close()
 
 ### 2. Split into train/val/test dataset
 
